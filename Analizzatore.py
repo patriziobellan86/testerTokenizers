@@ -12,77 +12,42 @@ import collections
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from pdfTestCreator import CreaPdf
 
 class Analizzatore:
     r"""questa classe analizza tutti i dati dei tests"""
     
     def VERSION(self):
-        return u"vers.0.2.1.a"
+        return u"vers.0.2.3.a"
         
         
     def __init__(self):
         self.folderTest = "test files\\" #cartella files dei risultati dei tests
         self.folderGrafici = "dati\\grafici\\"
         fileRisultati = self.folderTest + "results.pickle"
-        self.tools=Tools (0) #strumenti vari
+        self.tools = Tools (0) #strumenti vari
         
         self.risultati = self.tools.LoadByte (fileRisultati)
         self.TIPO_PARAMS = 'PARAMS'
         self.TIPO_DIMENS = 'DIMS'
         
+        self.tests = collections.defaultdict (list)
+        self.best = collections.defaultdict (list)
         self.AnalizzaDati()
-        
+ 
         
     def AnalizzaDati (self):
         for k in self.risultati.keys():
             self.AnalizzaDato (k)
-            
-
-# TODO            
+        self.EstraiMiglioriTok ()    
+        
+        
     def AnalizzaDato (self, key):
-        euristicaValorMedio = True
-        euristicaNoZero = True
         
         #controllo se ha superato tutte le prove
         for test in self.risultati[key]:
- #tmp
-            print "Creare la documentazione"
             self.CreaDocumentazioneTest (key)
-            continue
-        
-            if hasattr(test, 'euristicaNoZero'):
-                euristicaNoZero = euristicaNoZero * test['euristicaNoZero']
-            if hasattr(test, 'euristicaPrestazioniMedie'):
-                euristicaValorMedio = test['euristicaPrestazioniMedie']
-        
-        if euristicaValorMedio and euristicaNoZero:        
-            #se ha superato i tests
-            #creo la documentazione
-            print "Creare la documentazione"
-            self.CreaDocumentazioneTest (key)
-            
-        else:
-            
-            #non tutti i test sono stati superati, non creo la documentazione completa
-            #perchè escludo il test
-            print "Tokenizzatore Rifiutato perchè non ha superato l'euristica NoZero"
-            print "Creare documentazione parziale e indicare dove e come ha fallito il test"
-            if euristicaValorMedio:
-                pass
-            elif euristicaNoZero:
-                pass                
-            
-            self.CreaDocumentazioneTestNonCompleta (key)
-            
-            
-    #########################################################################        
-    def CreaDocumentazioneTestNonCompleta (self, key):
-        #suddivido le due tipologie di test
-        res = self.SuddividiTipiTest (key)
-        print "Continuare da qui"
-
-
+  
     #########################################################################
     def CreaDocumentazioneTest (self, key):
         #suddivido le due tipologie di test
@@ -104,18 +69,98 @@ class Analizzatore:
         print "Prestazione peggiore test sulla tipologia PARAMS :",  self.PeggiorRisultato (self.TIPO_PARAMS, res)
         print "Prestazione peggiore test sulla tipologia DIMS   :",  self.PeggiorRisultato (self.TIPO_DIMENS, res)
         
+        #aggiungo i valori a self.test
+        self.tests ['valMedioParams'].append ((key, self.ValorMedioPrestazioni (self.TIPO_PARAMS, res)))
+        self.tests ['valMedioDms'].append ((key, self.ValorMedioPrestazioni (self.TIPO_DIMENS, res)))
+        self.tests['BestParams'].append ((key, self.MigliorRisultato (self.TIPO_PARAMS, res)))
+        self.tests['BestDims'].append ((key, self.MigliorRisultato (self.TIPO_DIMENS, res)))
+        
+        
+        attributi = self.risultati[key]['attributiTok']
+        print "attributiTok", attributi
+        
         
         print "Grafico su parmas"
-        self.GraficoParamas (key, res)
+        self.GraficoParamas (key, res, attributi)
         
         print "grafico su dims"
         self.GraficoDims (key, res)
+
+        #creo il documento pdf del test
+        self.CreaPaginaPdfTest (key, res, attributi)
+
+
+    def EstraiMiglioriTok (self):
+        #per ogni categoria estraggo il migliore
         
-        print "fino a qui"
-        print "aggiungi dati al pdf"
-        self.CreaPaginaPdfTest (key)
+        best = 0
+        blist = []
+        for i in self.tests ['valMedioParams']:
+            if i[1] > best[1]:
+                best = i
+                blist = [i]
+            elif i[1] == best [1]:
+                blist.append (i)
+        self.best['valMedioParams'] = blist
+        
+        best = 0
+        blist = []
+        for i in self.tests ['valMedioDms']:
+            if i[1] > best[1]:
+                best = i
+                blist = [i]
+            elif i[1] == best [1]:
+                blist.append (i)
+        self.best['valMedioDms'] = blist
+        
+        best = 0
+        blist = []
+        for i in self.tests ['BestParams']:
+            if i[1] > best[1]:
+                best = i 
+                blist = [i]
+            elif i[1] == best [1]:
+                blist.append (i)
+        self.best['BestParams'] = blist
+        
+        best = 0
+        blist = []
+        for i in self.tests ['BestDims']:
+            if i[1] > best[1]:
+                best = i
+                blist = [i]
+            elif i[1] == best [1]:
+                blist.append (i)
+        self.best['BestDims'] = blist        
+        
+        print "TOKENIZZATORI CON I RISULTATI MIGLIORI"
+        
+        print "Valore medio prestazioni"
+        print "Media prestazioni test sulla tipologia PARAMS : "
+        for i in self.best['valMedioParams']:
+            print "Test : %s \n Value : %f"%(i)
+            
+        print "Media prestazioni test sulla tipologia DIMS : "
+        for i in self.best['valMedioDms']:
+            print "Test : %s \n Value : %f"%(i)
 
-
+        print "Miglior risultato"
+        print "Prestazione migliore test sulla tipologia PARAMS :"
+        for i in self.best['BestParams']:
+            print "Test : %s \n Value : %f"%(i)  
+            
+        print "Prestazione migliore test sulla tipologia DIMS :"
+        for i in self.best['BestDims']:
+            print "Test : %s \n Value : %f"%(i)  
+          
+        self.CreaDocumentazioneBestTest ()
+        
+        
+    def CreaDocumentazioneBestTest(self):
+        print "crea documentazione best test da controllare bene"        
+        CreaPdf ().CreaPdfBestTest (self.best)
+        
+        
     def SuddividiTipiTest (self, key):
         r"""
             Questo metodo suddivide i tests del tokenizers
@@ -176,19 +221,27 @@ class Analizzatore:
         return best
         
         
-    def GraficoParamas (self, testName, res):
-        self.Plot(testName, self.TIPO_PARAMS, res)
+    def GraficoParamas (self, testName, res, attributi):
+        self.Plot(testName, self.TIPO_PARAMS, res, attributi)
             
             
     def GraficoDims (self, testName, res):
-        self.Plot(testName, self.TIPO_DIMENS, res)
+        self.Plot(testName, self.TIPO_DIMENS, res, attributi)
         
         
-    def CreaPaginaPdfTest (self, key):
-        pass
+    def CreaPaginaPdfTest (self, key, res):
+        print "crea pagina pdf Controllare"
+        CreaPdf ().CreaPdfTest (key, 
+            self.ValorMedioPrestazioni (self.TIPO_PARAMS, res),
+            self.ValorMedioPrestazioni (self.TIPO_DIMENS, res),  
+            self.MigliorRisultato (self.TIPO_PARAMS, res), 
+            self.MigliorRisultato (self.TIPO_DIMENS, res), 
+            self.PeggiorRisultato (self.TIPO_PARAMS, res), 
+            self.PeggiorRisultato (self.TIPO_DIMENS, res))
+        
     
 # TODO BENE BENE    
-    def Plot(self, testName, tipo, res):
+    def Plot(self, testName, tipo, res, attributi):
         r"""
             Questa funzione plotta i dati
             
@@ -201,7 +254,9 @@ class Analizzatore:
                         '%d' % int(height),
                         ha='center', va='bottom')
                         
-        
+        if not attributi:
+            attributi = u""
+            
         self.xLabel =  [ele[0] for ele in res[tipo]]
         self.yValue =  [ele[1] for ele in res[tipo]]
         
@@ -222,7 +277,7 @@ class Analizzatore:
 
         autolabel(rects1)
 
-        plt.title(testName)
+        plt.title(testName + attributi)
 
 # NEW        
         try:
