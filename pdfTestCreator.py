@@ -43,6 +43,7 @@ class CreaPdf():
         MigliorRisultatoParams, MigliorRisultatoDims, PeggiorRisultatoParams, PeggiorRisultatoDims):
         
         #per prima cosa carico i grafici ottenuti
+
         graphParams = self.folderGrafici + testName + self.filenameGraphParams
         graphDims = self.folderGrafici + testName + self.filenameGraphDim
         
@@ -61,25 +62,40 @@ class CreaPdf():
         documento = list ()
         
         documento.append(imgLogoUni)             
-                
+        documento.append(Spacer(1,17)) 
+        
         styles=getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Justify', alignment=TA_RIGHT))
-        
-        ptext = "TEST: %s \n\n\nValore medio prestazioni\n"% testName
+        ptext = "TEST: %s"% testName
         documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext = "Risultati Ottenuti dai test:"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,17))
         ptext = "Media prestazioni test sulla tipologia PARAMS : %f \n"% ValorMedioPrestazioniParams 
-        ptext = ptext + "Media prestazioni test sulla tipologia DIMS   : %f \n"%  ValorMedioPrestazioniDims
-
-        ptext = ptext + "Miglior risultato \n"
-        ptext = ptext + "Prestazione migliore test sulla tipologia PARAMS %f: \n"% MigliorRisultatoParams
-        ptext = ptext + "Prestazione migliore test sulla tipologia DIMS   %f: \n"%  MigliorRisultatoDims
-      
-        ptext = ptext + "peggior risultato \n"
-        ptext = ptext + "Prestazione peggiore test sulla tipologia PARAMS %f: \n"%  PeggiorRisultatoParams
-        ptext = ptext + "Prestazione peggiore test sulla tipologia DIMS   %f: \n"%  PeggiorRisultatoDims
         documento.append(Paragraph(ptext, styles["Normal"]))
-        documento.append(Spacer(1,2))        
-
+        documento.append(Spacer(1,7))
+        ptext =  "Media prestazioni test sulla tipologia DIMS   : %f \n"%  ValorMedioPrestazioniDims
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7)) 
+        ptext = "Miglior risultato \n"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext = "Prestazione migliore test in condizioni %s sulla tipologia PARAMS %f: \n"% MigliorRisultatoParams
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext = "Prestazione migliore test in condizioni %s sulla tipologia DIMS   %f: \n"%  MigliorRisultatoDims
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext =  "peggior risultato \n"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext =  "Prestazione peggiore test in condizioni %s sulla tipologia PARAMS %f: \n"%  PeggiorRisultatoParams
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext =  "Prestazione peggiore test in condizioni %s sulla tipologia DIMS   %f: \n"%  PeggiorRisultatoDims
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
         
         documento.append(graphParams)  
         styles=getSampleStyleSheet()
@@ -111,30 +127,47 @@ class CreaPdf():
         styles=getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Justify', alignment=TA_RIGHT))
         
-        
-        ptext =  "TOKENIZZATORI CON I RISULTATI MIGLIORI"
-        
-        ptext = ptext + "Valore medio prestazioni"
-        ptext = ptext + "Media prestazioni test sulla tipologia PARAMS : "
-        for i in best['valMedioParams']:
-            ptext = ptext + "\nTest : %s \n Value : %f"%(i)
-            
-        ptext = ptext + "Media prestazioni test sulla tipologia DIMS : "
-        for i in best['valMedioDms']:
-            ptext = ptext + "\nTest : %s \n Value : %f"%(i)
-
-        ptext = ptext + "Miglior risultato"
-        ptext = ptext + "Prestazione migliore test sulla tipologia PARAMS :"
-        for i in best['BestParams']:
-            ptext = ptext + "\nTest : %s \n Value : %f"%(i)  
-            
-        ptext = ptext + "Prestazione migliore test sulla tipologia DIMS :"
-        for i in best['BestDims']:
-            ptext = ptext + "\nTest : %s \n Value : %f"%(i) 
-            
-        
+        documento.append(Spacer(1,17))
+        ptext = "TOKENIZZATORI CON I RISULTATI MIGLIORI"
         documento.append(Paragraph(ptext, styles["Normal"]))
-
+        documento.append(Spacer(1,7))
+        ptext = "Valore medio prestazioni"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext = "Media prestazioni test sulla tipologia PARAMS : "
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        for i in best['valMedioParams']:
+            ptext = "\nTest : %s \n Value : %f"%(i)
+            documento.append(Paragraph(ptext, styles["Normal"]))
+            documento.append(Spacer(1,7))
+        ptext =  "Media prestazioni test sulla tipologia DIMS : "
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        for i in best['valMedioDms']:
+            ptext =  "\nTest : %s \n Value : %f"%(i)
+            documento.append(Paragraph(ptext, styles["Normal"]))
+            documento.append(Spacer(1,7))
+        ptext = "Miglior risultato"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        ptext = "Prestazione migliore test sulla tipologia PARAMS :"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        for i in best['BestParams']:
+            #ptext = ptext + "\nTest : %s \n Value : %f"%(i)  
+            ptext = "Test : %s \ncondizione %s Value : %f"%(i[0], i[1][0], i[1][1]) 
+            documento.append(Paragraph(ptext, styles["Normal"]))
+            documento.append(Spacer(1,7))
+        ptext = "Prestazione migliore test sulla tipologia DIMS :"
+        documento.append(Paragraph(ptext, styles["Normal"]))
+        documento.append(Spacer(1,7))
+        for i in best['BestDims']:
+            #ptext = ptext + "\nTest : %s \n Value : %f"%(i) 
+            ptext = "Test : %s \ncondizione %s Value : %f"%(i[0], i[1][0], i[1][1])  
+            documento.append(Paragraph(ptext, styles["Normal"]))
+            documento.append(Spacer(1,7))
+        
         doc.build(documento)    
         
         

@@ -22,6 +22,9 @@ class Analizzatore:
         
         
     def __init__(self):
+        self.tmp=collections.defaultdict(list)
+        
+        
         self.folderTest = "test files\\" #cartella files dei risultati dei tests
         self.folderGrafici = "dati\\grafici\\"
         fileRisultati = self.folderTest + "results.pickle"
@@ -33,27 +36,66 @@ class Analizzatore:
         
         self.tests = collections.defaultdict (list)
         self.best = collections.defaultdict (list)
+        
         self.AnalizzaDati()
  
         
     def AnalizzaDati (self):
-        for k in self.risultati.keys():
-            self.AnalizzaDato (k)
-        self.EstraiMiglioriTok ()    
+        nofiltro = collections.defaultdict (list)
+        filtro = collections.defaultdict (list)
         
+        self.ltestp = collections.defaultdict (list)
+        self.ltestd = collections.defaultdict (list)
+
+        for key in self.risultati.keys():
+        #divido in due liste distinte
+            for ele in self.risultati[key]:
+                if ele.has_key ('attributiTok') and ele['attributiTok']:
+                    
+                    filtro[(key, ele['attributiTok'])].append (ele)
+                else:
+                    nofiltro[key].append (ele)
+        #ora devo effettuare una selezione tra i test con attributo e 
+        #riportare solo la parametrizzazione migliore
         
-    def AnalizzaDato (self, key):
-        
-        #controllo se ha superato tutte le prove
-        for test in self.risultati[key]:
+        for lkey in filtro.keys():
+            bestp = {'score':0}
+            bestd = {'score':0}
+            #ora ho una lista in lkey
+            for ele in filtro[lkey]:
+                if ele.has_key('score'):       
+                    if ele['tipoTest'] == u'PARAMS':
+                        if float(ele['score']) > float(bestp['score']):
+                            bestp = ele
+                            self.ltestp[lkey[0]]=[key[1]]
+                        elif ele['score'] == bestp['score']:    
+                            self.ltestp[lkey[0]].append (key[1])
+                    elif ele['tipoTest'] == u'DIMS':
+                        if float(ele['score']) > float(bestp['score']):
+                            bestd = ele
+                            self.ltestd[lkey[0]]=[key[1]]
+                        elif ele['score'] == bestd['score']:    
+                            self.ltestd[lkey[0]].append (key[1])
+                 
+            #aggiungo il test alla lista dei filtrati
+            if bestp['score'] > 0:                        
+                nofiltro[lkey[0]].append (bestp)
+            if bestd['score'] > 0:
+                nofiltro[lkey[0]].append (bestd)
+          
+        self.risultati = nofiltro
+        for key in self.risultati.keys():
             self.CreaDocumentazioneTest (key)
+        #controllare la funzione qui sotto che va in errore!!!!
+        self.EstraiMiglioriTok () 
+
   
     #########################################################################
     def CreaDocumentazioneTest (self, key):
         #suddivido le due tipologie di test
         res = self.SuddividiTipiTest (key)
         
-        print "Creazione documentazione per il test"
+        print "Creazione documentazione per il test %s"%key
         
         #Valor medio dei test
         print "Valore medio prestazioni"
@@ -74,65 +116,61 @@ class Analizzatore:
         self.tests ['valMedioDms'].append ((key, self.ValorMedioPrestazioni (self.TIPO_DIMENS, res)))
         self.tests['BestParams'].append ((key, self.MigliorRisultato (self.TIPO_PARAMS, res)))
         self.tests['BestDims'].append ((key, self.MigliorRisultato (self.TIPO_DIMENS, res)))
-        
-        
-        attributi = self.risultati[key]['attributiTok']
-        print "attributiTok", attributi
-        
-        
+# temporaneo
         print "Grafico su parmas"
-        self.GraficoParamas (key, res, attributi)
+        self.GraficoParamas (key, res)
         
         print "grafico su dims"
         self.GraficoDims (key, res)
 
         #creo il documento pdf del test
-        self.CreaPaginaPdfTest (key, res, attributi)
+        self.CreaPaginaPdfTest (key, res)
 
 
     def EstraiMiglioriTok (self):
         #per ogni categoria estraggo il migliore
         
-        best = 0
+        best = (0, 0)
         blist = []
-        for i in self.tests ['valMedioParams']:
-            if i[1] > best[1]:
-                best = i
-                blist = [i]
-            elif i[1] == best [1]:
-                blist.append (i)
+        for ele in self.tests ['valMedioParams']:       
+            if float(ele[1]) > float(best[1]):            
+                best = ele
+                blist = [ele]
+            elif float(ele[1]) == float(best[1]):
+                blist.append (ele)
+                    
         self.best['valMedioParams'] = blist
         
-        best = 0
+        best = (0, 0)
         blist = []
-        for i in self.tests ['valMedioDms']:
-            if i[1] > best[1]:
-                best = i
-                blist = [i]
-            elif i[1] == best [1]:
-                blist.append (i)
+        for ele in self.tests ['valMedioDms']:
+            if float(ele[1]) > float(best[1]):
+                best = ele
+                blist = [ele]
+            elif float(ele[1]) == float(best[1]):
+                blist.append (ele)
         self.best['valMedioDms'] = blist
         
-        best = 0
+        best = (0, (0, 0))
         blist = []
-        for i in self.tests ['BestParams']:
-            if i[1] > best[1]:
-                best = i 
-                blist = [i]
-            elif i[1] == best [1]:
-                blist.append (i)
+        for ele in self.tests ['BestParams']:   
+            if float(ele[1][1]) > float(best[1][1]):            
+                best = ele
+                blist = [ele]
+            elif float(ele[1][1]) == float(best[1][1]):
+                blist.append (ele)
         self.best['BestParams'] = blist
         
-        best = 0
+        best = (0, (0, 0))
         blist = []
-        for i in self.tests ['BestDims']:
-            if i[1] > best[1]:
-                best = i
-                blist = [i]
-            elif i[1] == best [1]:
-                blist.append (i)
-        self.best['BestDims'] = blist        
-        
+        for ele in self.tests ['BestDims']:   
+            if float(ele[1][1]) > float(best[1][1]):            
+                best = ele
+                blist = [ele]
+            elif float(ele[1][1]) == float(best[1][1]):
+                blist.append (ele)
+        self.best['BestDims'] = blist
+             
         print "TOKENIZZATORI CON I RISULTATI MIGLIORI"
         
         print "Valore medio prestazioni"
@@ -147,12 +185,12 @@ class Analizzatore:
         print "Miglior risultato"
         print "Prestazione migliore test sulla tipologia PARAMS :"
         for i in self.best['BestParams']:
-            print "Test : %s \n Value : %f"%(i)  
-            
+            print "Test : %s \ncondizione %s Value : %f"%(i[0], i[1][0], i[1][1])  
+   
         print "Prestazione migliore test sulla tipologia DIMS :"
         for i in self.best['BestDims']:
-            print "Test : %s \n Value : %f"%(i)  
-          
+            print "Test : %s \ncondizione %s Value : %f"%(i[0], i[1][0], i[1][1])  
+            
         self.CreaDocumentazioneBestTest ()
         
         
@@ -221,15 +259,16 @@ class Analizzatore:
         return best
         
         
-    def GraficoParamas (self, testName, res, attributi):
-        self.Plot(testName, self.TIPO_PARAMS, res, attributi)
+    def GraficoParamas (self, testName, res):
+        self.Plot(testName, self.TIPO_PARAMS, res)
             
             
     def GraficoDims (self, testName, res):
-        self.Plot(testName, self.TIPO_DIMENS, res, attributi)
+        self.Plot(testName, self.TIPO_DIMENS, res)
         
         
     def CreaPaginaPdfTest (self, key, res):
+ 
         print "crea pagina pdf Controllare"
         CreaPdf ().CreaPdfTest (key, 
             self.ValorMedioPrestazioni (self.TIPO_PARAMS, res),
@@ -241,12 +280,13 @@ class Analizzatore:
         
     
 # TODO BENE BENE    
-    def Plot(self, testName, tipo, res, attributi):
+    def Plot(self, testName, tipo, res):
         r"""
             Questa funzione plotta i dati
             
         """
         def autolabel(rects):
+            
             # attach some text labels
             for rect in rects:
                 height = rect.get_height()
@@ -254,9 +294,6 @@ class Analizzatore:
                         '%d' % int(height),
                         ha='center', va='bottom')
                         
-        if not attributi:
-            attributi = u""
-            
         self.xLabel =  [ele[0] for ele in res[tipo]]
         self.yValue =  [ele[1] for ele in res[tipo]]
         
@@ -274,10 +311,15 @@ class Analizzatore:
         ax.set_title('test scores')
         ax.set_xticks(ind + width)
         ax.set_xticklabels(tuple(self.xLabel), rotation=90)#rotation ='vertical')
-
-        autolabel(rects1)
-
-        plt.title(testName + attributi)
+        #questa è da sistemare perchè mi mette lo zero sopra ogni etichetta
+       # autolabel(rects1)
+#
+#        if testName[1]:
+#            testName = testName[0] + testName[1]
+#        else:
+#            testName = testName[0]
+#            
+        plt.title(testName)
 
 # NEW        
         try:
