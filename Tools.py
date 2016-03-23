@@ -200,13 +200,15 @@ class Tools:
             return [line for line in csv.reader(csvfile)]
             
             
-    def CaricaCorpus(self, randomCorpus = False):
+    def CaricaCorpus(self, randomCorpus = False, folder = None):
         r""" 
             Questo metodo si occupa di caricare un corpus utilizzato per i tests
             
             
         """
-        
+#NEW        
+        if folder:
+            self.folderCorpus = folder
         
 #####MIGLIORATA FUNZIONE ###################        
 
