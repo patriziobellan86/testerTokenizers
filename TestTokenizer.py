@@ -12,6 +12,7 @@ from __future__ import division, unicode_literals
 from Tools import Tools
 from TestTextTiling import TextTiling
 from CreatorePunktTokenize import MyPunktTokenize
+from DimSamplesPunkt import DimSamplesPunkt
 
 import Queue
 import threading
@@ -33,22 +34,26 @@ class TestTokenizer():
         return u"vers.0.3.8.a"
       
       
-    def __init__(self, fileRisultati = "Risultati", save = False, dimTests = [0], aggiornaDatiTest = False, dimsTrainTok  = [500, 1000]):
-        self.dimTests = dimTests
+    def __init__(self, fileRisultati = "Risultati", save = False, 
+            dimTests = [0], aggiornaDatiTest = False, dimsTrainTok  = [500, 1000]):
+        self.dimTests = dimTests   #list numerosità test espressa in numero di frasi
+#######♣valori temporanei
+        self.sogliaMiglioramento = 0.0003  # tmp value
+        self.passoTraining = 500 #inteso come numero di parole
+
 
         self.save = save
-          
-#sistemare valore - per ora è solo di test
-        self.sogliaMiglioramento = 0.005
-        
+                  
         self.TIPO_PARAMS = 'PARAMS'
         self.TIPO_DIMENS = 'DIMS'
-#######mettere valori giusti        
-        self.dimsTrainTok = dimsTrainTok    # dimensioni di training dei tokenizzatore, espressa in num di sents!
         
         self.folderTestFiles = u"test files\\"
         self.folderPunkt = u"punkt\\"
+        self.fileExtPnkt = u".punktTok"
         self.folderDati = u"dati\\"
+# new        
+        self.folderCorpusTraining = u"corpus training\\"
+        
         self.fileRisultati = self.folderTestFiles + "results.pickle"
         self.fileNameRe = self.folderDati+u"RegularExpression.tag"
         self.stopwordsFilename = self.folderDati + u"Italian Stopwords.stopWords"
@@ -133,7 +138,7 @@ class TestTokenizer():
 #
 #        if self.patterns:
 #            self.AvviaTestREWordTok (tipo = self.tools.SENT)
-#
+#        eliminare tanto non funziona con questo tipo di testo
 #        self.AvviaTestTextTilingTokenizer ()
 #     
         self.TestMyPunkt ()
@@ -180,62 +185,72 @@ class TestTokenizer():
                         self.normalParamW, self.TIPO_DIMENS, tipo, attributi, attrFilename))
 #            Lancio i Threads
 #            MThreard ()
-            self.TestTok ()
-        Tests ()
+            return self.TestTok ()
+        return Tests ()
     
 
     def __Test (self, testName, tok, dim, paramS, paramW, tipoTest, tipo, attributi, attrFilename, registra = True):
-        s = u"\nTEST : {}".format (testName) 
-        s = s + "\nTest su %d in condizioni paramS: %s paramW: %s" % (dim, paramS, paramW)
-        self.tools.PrintOut (s)
-        
-        #Oggetto per il corpus
-        corpusObj = Tools (dim)
-        corpusObj.CaricaCorpus ()
-                        
-        datiOut = tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))
-        
-        if tipo == self.tools.SENT:
-            tag = paramS
-        else:
-            tag = u""
+        try:
+            s = u"\nTEST : {}".format (testName) 
+            s = s + "\nTest su %d in condizioni paramS: %s paramW: %s" % (dim, paramS, paramW)
+            self.tools.PrintOut (s)
             
-        r, score = self.tools.RisultatiTest(testName, datiOut, tipo, corpusObj.words, corpusObj.corpusLst, tag)
-        self.tools.PrintOut (r)   
-        #Salvo il file elaborato dal tokenizzatore
-        fileTest = None
-        if self.save and registra:
-            if not attrFilename:
-                attrFilename = u""
+            #Oggetto per il corpus
+            corpusObj = Tools (dim)
+            corpusObj.CaricaCorpus ()
+    #        #tmp
+    #        c =corpusObj.CreaPlainText (paramS, paramW)
+    #        datiOut = tok.tokenize (c)
+    #        
+            #good
+            datiOut = tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))
+            
+            if tipo == self.tools.SENT:
+                tag = paramS
+            else:
+                tag = u""
                 
-            filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(dim) + u" " + u".txt"
-            fileTest = filename
+            r, score = self.tools.RisultatiTest(testName, datiOut, tipo, corpusObj.words, corpusObj.corpusLst, tag)
+            self.tools.PrintOut (r)   
+            #Salvo il file elaborato dal tokenizzatore
+            fileTest = None
+            if self.save and registra:
+                if not attrFilename:
+                    attrFilename = u""
+                    
+                filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(dim) + u" " + u".txt"
+                fileTest = filename
+                
+                self.tools.SaveFile (filename = filename, dati = datiOut) 
+                
+                
+            if self.EuristicaNoZero (score): 
+                self.tools.PrintOut ("Euristica NoZero superata")     
+            else:
+                self.tools.PrintOut ("Euristica NoZero Non superata")
+                
+            test = {'paramS':paramS, 'paramW':paramW, 'dim':dim, 
+                    'score':score, 'euristicaNoZero': self.EuristicaNoZero (score), 
+                    'tipoTest': tipoTest, 'fileTest': fileTest, 'attributiTok': attributi}
+            if registra:       
+                self.risultatiTest[testName].append(test)
             
-            self.tools.SaveFile (filename = filename, dati = datiOut) 
+            return (score, test)
+        except:
+            print "il testo non è elaborabile dal tokenizzatore %s"% testName
+            return False
             
-            
-        if self.EuristicaNoZero (score): 
-            self.tools.PrintOut ("Euristica NoZero superata")     
-        else:
-            self.tools.PrintOut ("Euristica NoZero Non superata")
-            
-        test = {'paramS':paramS, 'paramW':paramW, 'dim':dim, 
-                'score':score, 'euristicaNoZero': self.EuristicaNoZero (score), 
-                'tipoTest': tipoTest, 'fileTest': fileTest, 'attributiTok': attributi}
-        if registra:       
-            self.risultatiTest[testName].append(test)
-        
-        #ma mi serve???
-        return (score, test)
             
     def TestTok (self):
         while True:
             #processo
             if self.queue.empty ():
                 break
-            self.__Test (*self.queue.get())
+            if not self.__Test (*self.queue.get()):
+                return False
             self.queue.task_done()  
-            
+        return True
+        
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
 
                                     
@@ -687,8 +702,11 @@ class TestTokenizer():
         
         def CreaTokenizzatore (dimTraining, params):            
             obj = Tools (dimTraining)
+#VERIFICARE CHE IL PARAMETRO FOLDER FUNZIONI CORRETTAMENTE            
+            #obj.CaricaCorpus (folder = self.folderCorpusTraining)
+            #test mode
             obj.CaricaCorpus ()
-
+            
             return MyPunktTokenize().CreaMyPunkt (obj.CreaPlainText (self.simpleParamS, self.simpleParamW), *params)            
 
             #######################################            
@@ -756,25 +774,65 @@ class TestTokenizer():
            
         ########PARTE STANDARD DEL TESTS  #################
         #per prima cosa addestro e testo il tokenizzatore con i parametri standard
-        #secondo le diverse dimensioni di training
 
-#impostare una dimensione e poi usare una euristica del miglioramento per decidere quale dimensione utilizzare
-        for dimtraining in self.dimsTrainTok:
+        #Stimo il dimensionamento di training migliore, calcolato sul primo valore delle dimensioni dei test
+        #questi parametri servono per effettuare almeno una volta il ciclo
+        precScore = 0
+        attScore = self.sogliaMiglioramento
+        dim = self.passoTraining
+        dimsent = DimSamplesPunkt().nSents (dim)
+        print "inizio euristica miglioramento default punkt"
+        while self.EuristicaMiglioramento (precScore, attScore):
+            print "dim", dim
+            precScore = attScore
+            dim = dim + self.passoTraining
+            dimsent = DimSamplesPunkt().nSents (dim)                
+            print "dimsent", dimsent
             testName =   u"DEFAULT PUNKT TOKENIZER"
             
             #creo il tokenizzatore
-            tok = CreaTokenizzatore (dimtraining, params)    
+            tok = CreaTokenizzatore (dimsent, params)    
             
-            #effettuo i test
-            dimTests = self.dimTests
-##àààATTENZZIONE EERRRORE QUI SOTTTO1!!!!!! SISTEMARE!!!!!!!!
-            tok = nltk.tokenize.TreebankWordTokenizer()
-            #devo implementare tokenize method!!!!
             tipo = self.tools.SENT
-            attributiTok =  {'dimTraining': dimtraining}
-            attrfn = unicode(dimtraining)
-            self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
+            attributiTok =  {'dimTrainingWords': dim}
+            attrfn = unicode(dim)
+ #def __Test (self, testName, tok,dim, paramS, paramW, tipoTest, tipo, attributi, attrFilename, registra = True):
+            attScore, test_ = self.__Test (testName, tok, self.dimTests[0], 
+                    self.normalParamS, self.normalParamW, self.TIPO_DIMENS, 
+                    self.tools.SENT, attributiTok, attrfn)
             
+            print "attScore:", attScore
+            print "precScore:", precScore
+        print "fine miglioramento"
+        print "inizio test su default punkt tok"
+        #Effettuo e registro il test con i parametri standard
+        testName =   u"DEFAULT PUNKT TOKENIZER"
+        #effettuo i test
+        dimTests = self.dimTests
+        #creo il tokenizzatore
+        tok = CreaTokenizzatore (dimsent, params)    
+        
+        tipo = self.tools.SENT
+        attributiTok =  {'dimTrainingWords': dim}
+        attrfn = unicode(dim)
+        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
+            
+#        
+##################
+#        for dimtraining in self.dimsTrainTok:
+#        
+#            testName =   u"DEFAULT PUNKT TOKENIZER"
+#            
+#            #effettuo i test
+#            dimTests = self.dimTests
+#            #creo il tokenizzatore
+#            tok = CreaTokenizzatore (dimtraining, params)    
+#            
+#            tipo = self.tools.SENT
+#            attributiTok =  {'dimTraining': dimtraining}
+#            attrfn = unicode(dimtraining)
+#            self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
+#            
         ##################################
             
         #ora inizio a cercare i parametri migliori per il tokenizzatore
@@ -794,7 +852,7 @@ class TestTokenizer():
                 #modifico un parametro
                 params[j] = parametri[j][iParam]
                 # Creo il tok
-                tok = CreaTokenizzatore (self.dimsTrainTok[0], params)
+                tok = CreaTokenizzatore (dimsent, params)
                 
                 paramTest = parametri[j][iParam]
                 
@@ -818,23 +876,49 @@ class TestTokenizer():
         
         #giunto a questo punto ho stimato i parametri ottimali per il tokenizzatore
         # l'ultimo test dovrebbe essere  quello con i risultati migliori
-          
-        #testo su tutte le dimensioni di training i parametri stimati
-        for dimtraining in self.dimsTrainTok:
-            testName =  + u"MY BEST PUNKT TOKENIZER"
-            
-            #creo il tokenizzatore
-            tok = CreaTokenizzatore (dimtraining, params)    
+
+        #Calcolo la dimensione di Training Migliore
+        precScore = 0
+        attScore = 0
+        dim = self.passoTraining
+        dimsent = DimSamplesPunkt().nSents (dim)
+        print "inizio stima dim training my punkt"
+        while self.EuristicaMiglioramento (precScore, attScore):
+            precScore = attScore
+            dim = dim + self.passoTraining
+            dimsent = DimSamplesPunkt().nSents (dim)                
+            print "dim", dim, dimsent
+            testName =   u"MY PUNKT TOKENIZER"
             
             #effettuo i test
             dimTests = self.dimTests
-##àààATTENZZIONE EERRRORE QUI SOTTTO1!!!!!! SISTEMARE!!!!!!!!
-            tok = nltk.tokenize.TreebankWordTokenizer()
-            #devo implementare tokenize method!!!!
+            #creo il tokenizzatore
+            tok = CreaTokenizzatore (dimsent, params)    
+            
             tipo = self.tools.SENT
-            attributiTok =  {'dimTraining': dimtraining}
-            attrfn = unicode(dimtraining)
-            self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)  
+            attributiTok =  {'dimTrainingWords': dim}
+            attrfn = unicode(dim)
+ #def __Test (self, testName, tok,dim, paramS, paramW, tipoTest, tipo, attributi, attrFilename, registra = True):
+            attScore, test_ = self.__Test (testName, tok, dimTests, 
+                    self.normalParamS, self.normalParamW, self.TIPO_DIMENS, 
+                    self.tools.SENT, attributiTok, attrfn)
+        print "fine miglioramento"
+        print "inizio test my punkt"
+        
+        #Test con il dimensionamento del tok già effettuato dall'istr prec
+        testName =  + u"MY BEST PUNKT TOKENIZER"
+        #creo il tokenizzatore
+        tok = CreaTokenizzatore (dimsent, params)    
+        
+        #salvo il tokenizzatore
+        tokfilename = self.folderPunkt + testName + self.fileExtPnkt
+        
+        self.tools.SaveByte (tok, tokfilename)
+        #devo implementare tokenize method!!!!
+        tipo = self.tools.SENT
+        attributiTok =  {'dimTrainingWords': dim}
+        attrfn = unicode(dimsent)
+        self.__TestTokenizer (testName, self.dimTests[0], tok, tipo, attributiTok, attrfn)  
            
         ############################################      
            
@@ -853,11 +937,8 @@ class TestTokenizer():
             :param str corpus: il corpus su cui testare il tokenizzatore
         """
         #utilizzo la stessa procedura di stima dei parametri del mypunkt tokenizer
-        def CreaTokenizzatore (dimTraining, params):            
-            obj = Tools (dimTraining)
-            obj.CaricaCorpus ()
-
-            return TextTiling().CreaMyPunkt (*params)            
+        def CreaTokenizzatore (params):            
+            return TextTiling().CreaTextTilingTokenizer (*params)            
 
             #######################################            
 
@@ -924,28 +1005,23 @@ class TestTokenizer():
            
         ########PARTE STANDARD DEL TESTS  #################
         #per prima cosa addestro e testo il tokenizzatore con i parametri standard
-        #secondo le diverse dimensioni di training
-
-        
         testName =   u"DEFAULT TEXTITILING TOKENIZER"
             
         #creo il tokenizzatore
         tok = CreaTokenizzatore (params)    
-            
-        #effettuo i test
-        dimTests = self.dimTests
-        tok = CreaTokenizzatore (params)
-           
         tipo = self.tools.SENT
         attributiTok =  {'params default': params}
         attrfn = "_default_params"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
+#inserita espressione di controllo - dato che questo tipo di tokenizzatore è applicabile solo
+# ad un campo ristretto di tipologie di testo        
+        if not self.__TestTokenizer (testName, self.dimTests, tok, tipo, attributiTok, attrfn):
+            return
             
+        print "fine prima parte test"
         ##################################
             
         #ora inizio a cercare i parametri migliori per il tokenizzatore
-        #utilizzando come dimensione di training la minore 
-
+       
         print "ciclo di tests per la stima dei parametri migliori"    
         # ciclo su tutti i parametri    
         #j è posizione su params
@@ -991,17 +1067,15 @@ class TestTokenizer():
         #creo il tokenizzatore
         tok = CreaTokenizzatore (params)    
             
-        #effettuo i test
-        dimTests = self.dimTests
-        tok = CreaTokenizzatore (params)
-           
         tipo = self.tools.SENT
         attributiTok =  {'my params': params}
         attrfn = "_my_params"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-           
+        
+        self.__TestTokenizer (testName, self.dimTests, tok, tipo, attributiTok, attrfn)
         
         
+        
+  ################old old old      
 #        #per prima cosa avvio il test con i parametri standard, se supera le 
 #        #euristiche NoZero e ValoreMedio allora procedo con gli altri tests
 #        
@@ -1165,15 +1239,16 @@ class TestTokenizer():
             return False
 
 
- #### TODO  ####
-    def EuristicaMiglioramento (self, scores, soglia):
+    def EuristicaMiglioramento (self, precScore, attScore):
         r"""
-            il test deve ottenere delle prestazioni medie sopra il valore soglia
+            Questo metodo ritorna True se c'è stato un miglioramento
+            False altrimenti
+            
         """
-        print "TODO"
-        
+        if float (attScore) > float (precScore) * (1 + float (self.sogliaMiglioramento)):
+            return True
         return False
-                                                   
+                                                      
     ########################################################################
                                           
 #############################################################################

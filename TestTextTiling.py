@@ -29,17 +29,17 @@ class TextTiling:
         return u"0.3.8.1.a"
         
         
-    def __init__(self, dim, paramS, paramW, save, nThread = -1):
-        self.dim = dim
-        self.paramS = paramS
-        self.paramW = paramW
-    
-        self.nt = nThread   #numero di thread da utilizzare per i compiti
-        
+    def __init__(self):   #, dim, paramS, paramW, save, nThread = -1):
+#        self.dim = dim
+#        self.paramS = paramS
+#        self.paramW = paramW
+#    
+#        self.nt = nThread   #numero di thread da utilizzare per i compiti
+#        
         self.folderDati = u"dati\\"
         self.fileExtStopW = u".stopWords"
         self.tools = Tools (0)  #Strumenti vari
-        self.save = save
+#        self.save = save
         self.folderTestFiles = u"test files\\"
         
         #BLOCK_COMPARISON, VOCABULARY_INTRODUCTION = 0, 1
@@ -54,17 +54,18 @@ class TextTiling:
     
         self.cutoffPolicy={'LC':0, 'HC':1}
         
-        self.stopWords=glob.glob(self.folderDati + self.fileExtStopW)
+        self.stopWords=glob.glob(self.folderDati + '*' + self.fileExtStopW)
+        
         if not self.stopWords:
-            import ItalianStopwords
-            ItalianStopwords.AvviaCalcoli ()
-            self.stopWords=glob.glob(self.folderDati + self.fileExtStopW)            
+            import ItalianStopWords
+            ItalianStopWords.ItalianStopWords().StopWords ()
+            self.stopWords=glob.glob(self.folderDati + '*' + self.fileExtStopW)            
        
        
         self.D_w = 20 
         self.D_k = 10
         self.D_similarityMethod = self.similarityMethod['BLOCK_COMPARISON']
-        self.D_stopWords = None
+        self.D_stopWords = self.stopWords[0]
         self.D_smoothingMethod = [0]
         self.D_smoothingWidth = 2 
         self.D_smoothingRounds = 1
@@ -94,7 +95,7 @@ class TextTiling:
         return [{e:e for e in self.wParam},
                 {e:e for e in self.kParam},
                 self.similarityMethod,
-                self.stopWords,
+                {e:e for e in self.stopWords},
                 {e:e for e in self.smoothingWidth},
                 {e:e for e in self.smoothingRounds},
                 self.D_cutoffPolicy]
@@ -103,6 +104,8 @@ class TextTiling:
             
     def CreaTextTilingTokenizer (self, w, k, similarityMethod, stopWords,
         smoothingMethod, smoothingWidth, smoothingRounds, cutoffPolicy):
+            
+        stopWords = self.tools.LoadByte (stopWords)
         
         return nltk.tokenize.TextTilingTokenizer (w = w, k = k, 
             similarity_method = similarityMethod, stopwords = stopWords,
