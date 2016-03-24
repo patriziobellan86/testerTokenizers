@@ -25,7 +25,10 @@ class DimSamplesPunkt ():
             nsent += 1
             if nw >= nWord:
                 return nsent
-                    
+        print "fine files"
+        return nsent
+
+            
 if __name__ == '__main__':
     a=DimSamplesPunkt ()
     b = a.nSents (1000)

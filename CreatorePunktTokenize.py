@@ -27,7 +27,8 @@ class MyPunktTokenize():
         self.fileExtAbbr = u".abl"
         self.folderSents = u"corpus\\"
         self.folderDati = u"dati\\"
-          
+        self.loglFilename = self.folderDati + "loglikelihood.pickle" 
+        
         self.tools = Tools(0)  # Strumenti vari
 
         #PARAMETRI LINGUISTICI
@@ -42,7 +43,16 @@ class MyPunktTokenize():
         self._ABBREV_BACKOFF = [1, 3, 5 ,7, 9]     #DEFAULT 5
 #METTERE QUELL OGIUSTO
         print "Mettere il collocation loglikelihood giusto, quello calcolato dalla classe apposita!!!"
-        self._COLLOCATION = [6, 7.88, 9.11]    #DEFAULT 7.88
+        #quiiiiiiiiiiiiiii
+        logls = self.tools.LoadByte (self.loglFilename)
+        if not logls:
+            #calcolo il loglikelihood
+            import LogLikelihood
+            logls = LogLikelihood.LogLikelihood(-1).LogLikelihoods ()
+            
+        self._COLLOCATION = [7.88]     #DEFAULT 7.88
+        self._COLLOCATION.extend(logls)
+      
         self._SENT_STARTER = [25, 30, 35, 40]   #DEFAULT 30 
         self._INCLUDE_ALL_COLLOCS = [True, False]      #DEFAULT FALSE
         self._INCLUDE_ABBREV_COLLOCS = [True, False]    #DEFAULT FALSE 

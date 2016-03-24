@@ -36,12 +36,14 @@ class PaisaSentsExtractor():
         nfile = float (0)
         fpaisa = codecs.open(self.paisa_corpus, mode='r', encoding='utf-8')
         while True:
-            try:
-                line = fpaisa.read (1)
-                if line[0] == u"<":
-                    if period[0] != u'#' and period[0] != u"" and len(period) > 1:
-                        frase = []
-                        period = u"".join (period)
+#            try:
+            line = fpaisa.read (1)
+            if line[0] == u"<":
+                if period[0] != u'#' and period[0] != u"" and len(period) > 1:
+                    frase = []
+                    period = u"".join (period)
+                    if len(period.strip ()) > 1:
+#                    try:
                         period = period[period.index (u">")+1:]
                         
                         for s in period.split (u"\n"):
@@ -55,27 +57,29 @@ class PaisaSentsExtractor():
                                 with codecs.open(filename, mode = 'a', encoding = 'utf-8') as out:
                                     out.writelines (frase)
                                 nfile += 1
-                                if nfile == 16:
-                                    pass
+                               
                                 if self.nsents != -1 and nfile > self.nsents:
                                     return
                                     
-                                
                                 if nfile in self.folderList.keys ():
                                     self.folderdst = self.folderList [nfile]
                                     del self.folderList [nfile]
-                                frase=[]
-                      
-                    period = []
-                period.append (line)
-            except:
-                print "fine dati"
+                                frase = []
+                    else:
+                        period = []
+#                    except:
+#                        with codecs.open('TEMPORANEO.txt', mode = 'a', encoding = 'utf-8') as out:
+#                            out.writelines (period)
+                period = []
+            period.append (line)
+#            except:
+#                print "fine dati"
         fpaisa.close ()
 if __name__=='__main__':
     print "Test Mode"
     print
     print "Estrazione di 500000 frasi"
-    #PaisaSentsExtractor (nsents = 1000010, folderList = {300000 : 'corpus training', 1000001: ""})
-    PaisaSentsExtractor (nsents = 1000, folderList = {30 : 'corpus training\\', 10: ""})
+    PaisaSentsExtractor (nsents = 1500000, folderList = {500000 : 'corpus training'})
+#micro test:    PaisaSentsExtractor (nsents = 1000, folderList = {30 : 'corpus training\\', 10: ""})
     print 'Processo terminato correttamente'
     
