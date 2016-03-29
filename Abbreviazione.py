@@ -44,33 +44,35 @@ class Abbreviazione ():
         """
         abbrs = set ()
         #ciclo su tutte le frasi
-        files = glob.glob (self.folderCorpus + u'*')        
-                
-        if type(dim) == type(int()):
-            dim = list(dim)
-        if type(dim) == type (list()):
-            _ = list ()            
-            for ele in dim:
-                if ele == -1:
-                    ele = len (files)
-                _.append (ele)
-            dim = _
-            dim.sort ()
+        files = glob.glob (self.folderCorpus + u'*.*')        
+        if dim != -1:
+            files = files[:dim]
+#        if type(dim) == type(int()):
+#            dim = list(dim)
+#        if type(dim) == type (list()):
+#            _ = list ()            
+#            for ele in dim:
+#                if ele == -1:
+#                    ele = len (files)
+#                _.append (ele)
+#            dim = _
+#            dim.sort ()
 
-        i = 0   #indice di scorrimento nel campione
-        j = float(0)   #indice di scorrimento dei files - uso float per evitare overflow
-        
+#        i = 0   #indice di scorrimento nel campione
+#        j = float(0)   #indice di scorrimento dei files - uso float per evitare overflow
+#        
         for file in files:
-            for line in self.tools.LoadFile(file):
+            lines = self.tools.LoadFile(file)
+            for line in lines:
                 line = line.split (u"\t")
                 if line[4] == self.ABBR:
                     abbrs.add (line[1])
-            if dim[i] == j:
-                filename = unicode(str(dim[i])) + u"_" + u"paisa"
-                self.SaveAbbrFile (filename, list(abbrs))
-                i += 1
-            j += 1
-        filename = unicode(str(dim[i])) + u"_" + u"paisa"
+#            if dim[i] == j:
+#                filename = unicode(str(dim[i])) + u"_" + u"paisa"
+#                self.SaveAbbrFile (filename, list(abbrs))
+#                i += 1
+#            j += 1
+        filename = u"paisa"
         self.SaveAbbrFile (filename, abbrs)
                 
                     
@@ -85,7 +87,8 @@ class Abbreviazione ():
         pattern_abl = r'^ABL+'   #r'^ABL+'
         pat_abl = re.compile(pattern_abl)
 
-        #Leggo morphIt   
+        #Leggo morphIt  
+        print self.fileMorphIt 
         for line in self.tools.LoadFile(self.fileMorphIt):
             line = line.split ()
             if len(line) == 3:
@@ -105,7 +108,7 @@ class Abbreviazione ():
         self.tools.SaveByte (dati = abbrs, filename = filename)
        
 def Test ():
-    numSamplesPaisa = [-1]
+    numSamplesPaisa = -1
     Abbreviazione (numSamplesPaisa)
     print "fine"
        
