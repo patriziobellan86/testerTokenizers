@@ -34,11 +34,14 @@ class TestTokenizer():
       
       
     def __init__(self, fileRisultati = "Risultati", save = False, 
-            dimTests = [0], aggiornaDatiTest = False, dimsTrainTok  = [500, 1000]):
+            dimTests = [0], aggiornaDatiTest = False):
+                
         self.dimTests = dimTests   #list numerosità test espressa in numero di frasi
-#######♣valori temporanei
-        self.sogliaMiglioramento = 0.0003  # tmp value
-        self.passoTraining = 500 #inteso come numero di parole
+
+        self.sogliaMiglioramento = 0.05
+        self.passoTraining = 100000
+        #tmp        
+        self.passoTraining = 1000
 
 
         self.save = save
@@ -94,17 +97,19 @@ class TestTokenizer():
         s = u"\n Avvio dei Tests"
         s = s + u"\n Avvio dei tests sui Words Tokenizers\n"
         self.tools.PrintOut (s)
-#        self.AvviaTestWordsTokenizers ()
+        self.AvviaTestWordsTokenizers ()
       
         s = u"\n Avvio dei tests sui Sents Tokenizers\n"
         self.tools.PrintOut (s)
         self.AvviaTestSentsTokenizers ()
-      
-        #Salvo il file dei risultati
-        self.tools.SaveByte (self.risultatiTest, self.fileRisultati)
+        self.__Save ()
         print "FINE TEST"
         
         
+    def __Save (self):
+        
+        #Salvo il file dei risultati
+        self.tools.SaveByte (self.risultatiTest, self.fileRisultati)
     ########################################################################
         
     #TESTS SUI WORDS TOKENIZERS
@@ -114,14 +119,16 @@ class TestTokenizer():
         """     
         nltk.tokenize.simple
         self.TestSimpleSpaceTokenizerWord ()
-        
+        self.__Save ()
         self.TestSimpleWordTokenizer ()
+        self.__Save ()
         self.TestSimpleWordTokenizerIta ()
+        self.__Save ()
         self.TestTreeBankTokenizer ()
-        
+        self.__Save ()
         if self.patterns:
             self.AvviaTestREWordTok (tipo = self.tools.WORD)
-
+            self.__Save ()
 
     ########################################################################
 
@@ -131,18 +138,19 @@ class TestTokenizer():
         """       
        
         #nltk.tokenize.simple
-#        self.TestSimpleLineTokenizerWord ()
-#        
-#        self.TestSimpleTokenizer ()
-#        self.TestSimpleTokenizerIta ()
-#
-#        if self.patterns:
-#            self.AvviaTestREWordTok (tipo = self.tools.SENT)
-#        
-#        self.AvviaTestTextTilingTokenizer ()
-     
+        self.TestSimpleLineTokenizerWord ()
+        self.__Save ()
+        self.TestSimpleTokenizer ()
+        self.__Save ()
+        self.TestSimpleTokenizerIta ()
+        self.__Save ()
+        if self.patterns:
+            self.AvviaTestREWordTok (tipo = self.tools.SENT)
+            self.__Save ()
+        self.AvviaTestTextTilingTokenizer ()
+        self.__Save ()
         self.TestMyPunkt ()
-
+        self.__Save ()
     ########################################################################
         
     #SIMPLE SPACE TOKENIZER
@@ -199,10 +207,14 @@ class TestTokenizer():
         while not self.queue.empty ():
           
             lt = []
+            #utilizzo tanti thread quanti sono i processori logici dell'elaboratore
             for  i in xrange (multiprocessing.cpu_count()):
             #for  i in xrange (self.queue.qsize ()):
 ######new new new            
                 try:
+                    if self.queue.empty ():
+                        #se non ci sono più dati da elaborare esco dal ciclo di elaborazione
+                        break
                     t = MyThread (self.__Test, i, self.queue.get (), r)
                     #thl.release ()
                     t.daemon = True
@@ -813,7 +825,7 @@ class TestTokenizer():
         
         print "inizio euristica miglioramento default punkt"
         while self.EuristicaMiglioramento (precScore, attScore):
-#controllare istruzione 
+
             precScore = attScore
             if nsentprec == dimsent:
                 break
@@ -1319,7 +1331,7 @@ def TestThreadNTh ():
     TestTokenizer ("MTHREAD", 1).TestTimeThreads ()
     
 def Tests ():
-    ncorpus=[1000, 2500]
+    ncorpus=[5000, 7500]
     
     #(self, fileRisultati = "Risultati", n = 10, save = True, dimTests = [0]):
     TestTokenizer(dimTests = ncorpus, save =True, aggiornaDatiTest=True)

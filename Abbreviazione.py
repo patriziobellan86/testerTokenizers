@@ -40,7 +40,7 @@ class Abbreviazione ():
             se è una lista, è la lista contenente il numero di files da utilizzare
             per creare i files di abbreaviazione
             
-            questo è stato fatto per poter effettuare più prove differenti
+            questo è stato fatto per poter effettuare prove differenti
         """
         abbrs = set ()
         #ciclo su tutte le frasi

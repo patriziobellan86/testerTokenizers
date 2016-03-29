@@ -18,7 +18,7 @@ class Analizzatore:
     r"""questa classe analizza tutti i dati dei tests"""
     
     def VERSION(self):
-        return u"vers.0.2.3.a"
+        return u"vers.0.3.1.b"
         
         
     def __init__(self):
@@ -28,6 +28,8 @@ class Analizzatore:
         self.folderTest = "test files\\" #cartella files dei risultati dei tests
         self.folderGrafici = "dati\\grafici\\"
         fileRisultati = self.folderTest + "results.pickle"
+        #temporaneo        
+        #fileRisultati = "result_tmp.pickle"
         self.tools = Tools (0) #strumenti vari
         
         self.risultati = self.tools.LoadByte (fileRisultati)
@@ -67,16 +69,19 @@ class Analizzatore:
                     if ele['tipoTest'] == u'PARAMS':
                         if float(ele['score']) > float(bestp['score']):
                             bestp = ele
-                            self.ltestp[lkey[0]]=[key[1]]
-                        elif ele['score'] == bestp['score']:    
-                            self.ltestp[lkey[0]].append (key[1])
+                            if ele.has_key('attributiTok'):
+                                self.ltestp[lkey[0]] = [ele['attributiTok']]
+                        elif ele['score'] == bestp['score'] and ele.has_key('attributiTok'):    
+                            self.ltestp[lkey[0]].append (ele['attributiTok'])
+                            #self.ltestp[lkey[0]].append (key)
                     elif ele['tipoTest'] == u'DIMS':
                         if float(ele['score']) > float(bestp['score']):
                             bestd = ele
-                            self.ltestd[lkey[0]]=[key[1]]
-                        elif ele['score'] == bestd['score']:    
-                            self.ltestd[lkey[0]].append (key[1])
-                 
+                            if ele.has_key('attributiTok'):
+                                self.ltestd[lkey[0]] = [ele['attributiTok']]
+                        elif ele['score'] == bestp['score'] and ele.has_key('attributiTok'):    
+                            self.ltestd[lkey[0]].append (ele['attributiTok'])                            
+
             #aggiungo il test alla lista dei filtrati
             if bestp['score'] > 0:                        
                 nofiltro[lkey[0]].append (bestp)
@@ -84,6 +89,7 @@ class Analizzatore:
                 nofiltro[lkey[0]].append (bestd)
           
         self.risultati = nofiltro
+
         for key in self.risultati.keys():
             self.CreaDocumentazioneTest (key)
         #controllare la funzione qui sotto che va in errore!!!!
@@ -116,11 +122,11 @@ class Analizzatore:
         self.tests ['valMedioDms'].append ((key, self.ValorMedioPrestazioni (self.TIPO_DIMENS, res)))
         self.tests['BestParams'].append ((key, self.MigliorRisultato (self.TIPO_PARAMS, res)))
         self.tests['BestDims'].append ((key, self.MigliorRisultato (self.TIPO_DIMENS, res)))
-# temporaneo
-        print "Grafico su parmas"
+
+        print "Creazione Grafico su parmas"
         self.GraficoParamas (key, res)
         
-        print "grafico su dims"
+        print "Creazione grafico su dims"
         self.GraficoDims (key, res)
 
         #creo il documento pdf del test
@@ -194,8 +200,7 @@ class Analizzatore:
         self.CreaDocumentazioneBestTest ()
         
         
-    def CreaDocumentazioneBestTest(self):
-        print "crea documentazione best test da controllare bene"        
+    def CreaDocumentazioneBestTest(self):       
         CreaPdf ().CreaPdfBestTest (self.best)
         
         
@@ -276,27 +281,29 @@ class Analizzatore:
             self.MigliorRisultato (self.TIPO_PARAMS, res), 
             self.MigliorRisultato (self.TIPO_DIMENS, res), 
             self.PeggiorRisultato (self.TIPO_PARAMS, res), 
-            self.PeggiorRisultato (self.TIPO_DIMENS, res))
+            self.PeggiorRisultato (self.TIPO_DIMENS, res), 
+            self.ltestp[key], 
+            self.ltestd[key])
         
-    
-# TODO BENE BENE    
+        
     def Plot(self, testName, tipo, res):
         r"""
             Questa funzione plotta i dati
             
         """
-        def autolabel(rects):
-            
-            # attach some text labels
-            for rect in rects:
-                height = rect.get_height()
-                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                        '%d' % int(height),
-                        ha='center', va='bottom')
+#        def autolabel(rects):
+#            
+#            # attach some text labels
+#            for rect in rects:
+#                height = rect.get_height()
+#                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+#                        '%d' % int(height),
+#                        ha='center', va='bottom')
                         
         self.xLabel =  [ele[0] for ele in res[tipo]]
-        self.yValue =  [ele[1] for ele in res[tipo]]
-        
+        self.yValue = [round(float(ele[1]) * 100, 2) for ele in res[tipo]]# [ele[1] for ele in res[tipo]]
+#        yValue=self.yValue
+#        yValue=[round(e*100, 3) for e in yValue]
         N = len (self.xLabel)
         ind = np.arange(N)  # the x locations for the groups
         width = 0.35       # the width of the bars 
@@ -306,22 +313,20 @@ class Analizzatore:
         fig, ax = plt.subplots()
         rects1 = ax.bar(ind, valoriY, width, color='r')
         
-        ax.set_ylabel('Scores')
-        ax.set_xlabel('Tipo ricostruzione frase')
-        ax.set_title('test scores')
+        ax.set_ylabel('Scores in percentuale')
+        if tipo == "PARAMS":
+            ax.set_xlabel('Tipo ricostruzione frase')
+        elif tipo == "DIMS":
+            ax.set_xlabel('Tipo ricostruzione frase')
+            
+        ax.set_title('test scores ' + testName)
         ax.set_xticks(ind + width)
         ax.set_xticklabels(tuple(self.xLabel), rotation=90)#rotation ='vertical')
-        #questa è da sistemare perchè mi mette lo zero sopra ogni etichetta
+        
        # autolabel(rects1)
-#
-#        if testName[1]:
-#            testName = testName[0] + testName[1]
-#        else:
-#            testName = testName[0]
-#            
+  
         plt.title(testName)
-
-# NEW        
+  
         try:
             mean = sum(self.yValue) / len(self.yValue)
         except ZeroDivisionError:

@@ -37,16 +37,19 @@ class MyPunktTokenize():
         
         #files di abbreviazione
         self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
-        
+        if not self.abbs:
+            #se non sono state calcolate le abbreviazioni faccio partire i calcoli
+            import Abbreviazione
+            Abbreviazione.Abbreviazione (-1)
+            self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
+            
         self._ABBREV = [0.1, 0.3, 0.5, 0.7]  #DEFAULT 0.3
         self._IGNORE_ABBREV_PENALITY = [True, False]    #DEFAULT FALSE
         self._ABBREV_BACKOFF = [1, 3, 5 ,7, 9]     #DEFAULT 5
-#METTERE QUELL OGIUSTO
-        print "Mettere il collocation loglikelihood giusto, quello calcolato dalla classe apposita!!!"
-        #quiiiiiiiiiiiiiii
+
         logls = self.tools.LoadByte (self.loglFilename)
         if not logls:
-            #calcolo il loglikelihood
+            #se non è stato calcolato, calcolo il loglikelihood
             import LogLikelihood
             logls = LogLikelihood.LogLikelihood(-1).LogLikelihoods ()
             
