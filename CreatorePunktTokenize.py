@@ -27,7 +27,8 @@ class MyPunktTokenize():
         self.fileExtAbbr = u".abl"
         self.folderSents = u"corpus\\"
         self.folderDati = u"dati\\"
-          
+        self.loglFilename = self.folderDati + "loglikelihood.pickle" 
+        
         self.tools = Tools(0)  # Strumenti vari
 
         #PARAMETRI LINGUISTICI
@@ -36,22 +37,45 @@ class MyPunktTokenize():
         
         #files di abbreviazione
         self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
-        
-        self._ABBREV = [0.1, 0.3, 0.5, 0.7, 1.0]  #DEFAULT 0.3
+        a=self.abbs
+        if not self.abbs:
+            #se non sono state calcolate le abbreviazioni faccio partire i calcoli
+            import Abbreviazione
+            Abbreviazione.Abbreviazione (-1)
+            self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
+            
+        self._ABBREV = [0.1, 0.3, 0.5, 0.7]  #DEFAULT 0.3
         self._IGNORE_ABBREV_PENALITY = [True, False]    #DEFAULT FALSE
         self._ABBREV_BACKOFF = [1, 3, 5 ,7, 9]     #DEFAULT 5
-#METTERE QUELL OGIUSTO
-        print "Mettere il collocation loglikelihood giusto, quello calcolato dalla classe apposita!!!"
-        self._COLLOCATION = [7.88, 5.11, 3.14, 9.11]    #DEFAULT 7.88
-        self._SENT_STARTER = [25, 30, 45]   #DEFAULT 30 
+
+        logls = self.tools.LoadByte (self.loglFilename)
+        if not logls:
+            #se non è stato calcolato, calcolo il loglikelihood
+            import LogLikelihood
+            logls = LogLikelihood.LogLikelihood(-1).LogLikelihoods ()
+            
+        self._COLLOCATION = [7.88]     #DEFAULT 7.88
+        self._COLLOCATION.extend(logls)
+      
+        self._SENT_STARTER = [25, 30, 35, 40]   #DEFAULT 30 
         self._INCLUDE_ALL_COLLOCS = [True, False]      #DEFAULT FALSE
         self._INCLUDE_ABBREV_COLLOCS = [True, False]    #DEFAULT FALSE 
-        self._MIN_COLLOC_FREQ = [1, 2, 5]         #DEFAULT 1
+        self._MIN_COLLOC_FREQ = [1, 2, 3]         #DEFAULT 1
 
         #parametri di default 
         self.D_internal_punctuation = self._internal_punctuation['default']
         self.D_end_sent_punct = self._end_sent_punct['default']
-        self.Dabbs = self.folderDati + "Italian Stopwords.stopWords"
+        
+        stopws = glob.glob (self.folderDati + u"*.stopWords")
+        if len (stopws) == 0:
+            import ItalianStopWords
+            
+            ItalianStopWords.ItalianStopWords().StopWords ()
+            ItalianStopWords.ConfrontaStopwords()
+
+            stopws = glob.glob (self.folderDati + u"*.stopWords")
+            
+        self.Dabbs = self.abbs[0]
         self.D_ABBREV = 0.3
         self.D_IGNORE_ABBREV_PENALITY = False
         self.D_ABBREV_BACKOFF =  5
@@ -73,6 +97,9 @@ class MyPunktTokenize():
                     PignoreAbbrevPenality, PabbrevBackoff, Pcollocation, PsentStarter, 
                     PincludeAllCollocs, PincludeAbbrevCollocs, PminCollocFreq)
         
+        if trainer == -1:
+            return trainer
+            
         trainer = self.Training (trainer, corpusTraining)        
         #Creo il tokenizzatore 
         punktTok = nltk.tokenize.punkt.PunktSentenceTokenizer (trainer.get_params ())
@@ -127,9 +154,11 @@ class MyPunktTokenize():
             
         abbrs = "\n".join (abbrs) 
         abbrs = "Start" + abbrs  + "End."
-            
-        trainer = nltk.tokenize.punkt.PunktTrainer (abbrs, baseClass) 
-        
+#new         
+        try:
+            trainer = nltk.tokenize.punkt.PunktTrainer (abbrs, baseClass) 
+        except ValueError:
+            return -1
         #fase 2 aggiungo i parametri
         trainer.ABBREV = ABBREV
         trainer._IGNORE_ABBREV_PENALITY = IGNORE_ABBREV_PENALITY

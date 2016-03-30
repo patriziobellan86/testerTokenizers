@@ -10,7 +10,7 @@ from __future__ import division
 import nltk
 from nltk.probability import FreqDist
 from nltk import *
-
+import glob
 from Tools import Tools
 from math import sqrt
 import Queue
@@ -34,11 +34,15 @@ class LogLikelihood ():
             campione su cui effettuare il test
             il parametro folder indica la cartella da cui caricare le frasi
         """
+        self.folderDati = "dati\\"
+        self.loglFilename = self.folderDati + "loglikelihood.pickle"
         self.__tools = Tools (n) #default -1, cioè tutto il campione
         self.__col_logl = list ()
         self.queue = Queue.Queue ()
         
         self.__tools.CaricaCorpus ()
+
+
 
     def __FreqFromCorpus (self):
         bi = FreqDist(bigrams(self.__tools.words))
@@ -99,9 +103,33 @@ class LogLikelihood ():
         print "var:%f   sigm:%f" %(var, sqrt(var))
         print "logl:", logl
         
-        return logl
+        #salvo il logl trovato
+        self.__tools.SaveByte ([logl], self.loglFilename) 
         
+        return [logl]
         
+    def LogLikelihoods (self):
+        r"""
+            Questo metodo calcola 3 loglikel. in base alle 3 dimensioni disponibili
+            3* - tutto il campione
+            2* - 2/3 del campione
+            1* - 1/3 del campione
+        """
+        ress = []
+        dimcorp = len(glob.glob (self.__tools.folderCorpus + '*.*'))
+        #suddivido gli step
+        for i in range(1,4):
+            #calcolo il logl
+            dim = int (i / 3 * dimcorp )
+            self.__tools.n = dim
+            self.__tools.CaricaCorpus ()
+            ress.append (self.LogLikelihood ()[0])
+        #registro i dati
+        self.__tools.DelFile (self.loglFilename)
+        self.__tools.SaveByte (ress, self.loglFilename) 
+        
+        return ress
+    
 ############################################################################
 
 class TestLogLikelihood ():
@@ -114,7 +142,8 @@ class TestLogLikelihood ():
             del campione su cui andare ad effettuare i tests
         """
         self.folderDati = "dati\\"
-        self.testFilename = self.folderDati + filename                
+        self.testFilename = self.folderDati + filename 
+                       
         self.tools = Tools(1)
         
         self.AvviaTests (batterie)
@@ -131,14 +160,16 @@ class TestLogLikelihood ():
             result = test.LogLikelihood ()
             
             print "LogLikelihood pari a %f" % result
-            
+            #salvo i log trovati    
             self.tools.SaveTestCsv (filename = filename,testName = "Loglikelihood",
                                     nSamples = dim, result = result)
+            
+            self.tools.SaveByte (result, self.loglFilename)                        
         print "Tests Eseguiti correttamente"
         
  
 def TestClasseDiCalcolo ():
-    a = LogLikelihood(n = 1000)
+    a = LogLikelihood (n = 1000)
     print "la sogla logLikelihood sul campione è:", a.LogLikelihood ()
 
 
@@ -147,6 +178,6 @@ def BatterieDiTest ():
     TestLogLikelihood (batterie = batterieTests)
 
 if __name__ == '__main__':
-    BatterieDiTest ()
+#    BatterieDiTest ()
 #    TestClasseDiCalcolo ()
-    
+    LogLikelihood (-1).LogLikelihood ()

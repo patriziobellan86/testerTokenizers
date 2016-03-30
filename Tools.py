@@ -200,13 +200,15 @@ class Tools:
             return [line for line in csv.reader(csvfile)]
             
             
-    def CaricaCorpus(self, randomCorpus = False):
+    def CaricaCorpus(self, randomCorpus = False, folder = None):
         r""" 
             Questo metodo si occupa di caricare un corpus utilizzato per i tests
             
             
         """
-        
+#NEW        
+        if folder:
+            self.folderCorpus = folder
         
 #####MIGLIORATA FUNZIONE ###################        
 
@@ -226,7 +228,10 @@ class Tools:
                 fileids = fileidsRandom
 ##############             
             else:
-                fileids = fileids[:self.n]
+                #controllo di non eccedere con lo slicing della list
+                if self.n < len (fileids):
+                    fileids = fileids[:self.n]
+                    
             fileids = [os.path.basename(w) for w in fileids]  
             self.corpus = nltk.corpus.ConllCorpusReader(root = self.folderCorpus,
                                             fileids = fileids, columntypes = lst_pos)     

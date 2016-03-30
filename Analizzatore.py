@@ -12,83 +12,98 @@ import collections
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from pdfTestCreator import CreaPdf
 
 class Analizzatore:
     r"""questa classe analizza tutti i dati dei tests"""
     
     def VERSION(self):
-        return u"vers.0.2.1.a"
+        return u"vers.0.3.1.b"
         
         
     def __init__(self):
+        self.tmp=collections.defaultdict(list)
+        
+        
         self.folderTest = "test files\\" #cartella files dei risultati dei tests
         self.folderGrafici = "dati\\grafici\\"
         fileRisultati = self.folderTest + "results.pickle"
-        self.tools=Tools (0) #strumenti vari
+        #temporaneo        
+        #fileRisultati = "result_tmp.pickle"
+        self.tools = Tools (0) #strumenti vari
         
         self.risultati = self.tools.LoadByte (fileRisultati)
         self.TIPO_PARAMS = 'PARAMS'
         self.TIPO_DIMENS = 'DIMS'
         
-        self.AnalizzaDati()
+        self.tests = collections.defaultdict (list)
+        self.best = collections.defaultdict (list)
         
+        self.AnalizzaDati()
+ 
         
     def AnalizzaDati (self):
-        for k in self.risultati.keys():
-            self.AnalizzaDato (k)
-            
-
-# TODO            
-    def AnalizzaDato (self, key):
-        euristicaValorMedio = True
-        euristicaNoZero = True
+        nofiltro = collections.defaultdict (list)
+        filtro = collections.defaultdict (list)
         
-        #controllo se ha superato tutte le prove
-        for test in self.risultati[key]:
- #tmp
-            print "Creare la documentazione"
+        self.ltestp = collections.defaultdict (list)
+        self.ltestd = collections.defaultdict (list)
+
+        for key in self.risultati.keys():
+        #divido in due liste distinte
+            for ele in self.risultati[key]:
+                if ele.has_key ('attributiTok') and ele['attributiTok']:
+                #key,{u'dimTrainingWords': 4000}
+                    
+                    print (key, ele['attributiTok'].items()[0])
+                    filtro[(key, ele['attributiTok'].items()[0])].append (ele)
+                else:
+                    nofiltro[key].append (ele)
+        #ora devo effettuare una selezione tra i test con attributo e 
+        #riportare solo la parametrizzazione migliore
+        
+        for lkey in filtro.keys():
+            bestp = {'score':0}
+            bestd = {'score':0}
+            #ora ho una lista in lkey
+            for ele in filtro[lkey]:
+                if ele.has_key('score'):       
+                    if ele['tipoTest'] == u'PARAMS':
+                        if float(ele['score']) > float(bestp['score']):
+                            bestp = ele
+                            if ele.has_key('attributiTok'):
+                                self.ltestp[lkey[0]] = [ele['attributiTok']]
+                        elif ele['score'] == bestp['score'] and ele.has_key('attributiTok'):    
+                            self.ltestp[lkey[0]].append (ele['attributiTok'])
+                            #self.ltestp[lkey[0]].append (key)
+                    elif ele['tipoTest'] == u'DIMS':
+                        if float(ele['score']) > float(bestp['score']):
+                            bestd = ele
+                            if ele.has_key('attributiTok'):
+                                self.ltestd[lkey[0]] = [ele['attributiTok']]
+                        elif ele['score'] == bestp['score'] and ele.has_key('attributiTok'):    
+                            self.ltestd[lkey[0]].append (ele['attributiTok'])                            
+
+            #aggiungo il test alla lista dei filtrati
+            if bestp['score'] > 0:                        
+                nofiltro[lkey[0]].append (bestp)
+            if bestd['score'] > 0:
+                nofiltro[lkey[0]].append (bestd)
+          
+        self.risultati = nofiltro
+
+        for key in self.risultati.keys():
             self.CreaDocumentazioneTest (key)
-            continue
-        
-            if hasattr(test, 'euristicaNoZero'):
-                euristicaNoZero = euristicaNoZero * test['euristicaNoZero']
-            if hasattr(test, 'euristicaPrestazioniMedie'):
-                euristicaValorMedio = test['euristicaPrestazioniMedie']
-        
-        if euristicaValorMedio and euristicaNoZero:        
-            #se ha superato i tests
-            #creo la documentazione
-            print "Creare la documentazione"
-            self.CreaDocumentazioneTest (key)
-            
-        else:
-            
-            #non tutti i test sono stati superati, non creo la documentazione completa
-            #perchè escludo il test
-            print "Tokenizzatore Rifiutato perchè non ha superato l'euristica NoZero"
-            print "Creare documentazione parziale e indicare dove e come ha fallito il test"
-            if euristicaValorMedio:
-                pass
-            elif euristicaNoZero:
-                pass                
-            
-            self.CreaDocumentazioneTestNonCompleta (key)
-            
-            
-    #########################################################################        
-    def CreaDocumentazioneTestNonCompleta (self, key):
-        #suddivido le due tipologie di test
-        res = self.SuddividiTipiTest (key)
-        print "Continuare da qui"
+        #controllare la funzione qui sotto che va in errore!!!!
+        self.EstraiMiglioriTok () 
 
-
+  
     #########################################################################
     def CreaDocumentazioneTest (self, key):
         #suddivido le due tipologie di test
         res = self.SuddividiTipiTest (key)
         
-        print "Creazione documentazione per il test"
+        print "Creazione documentazione per il test %s"%key
         
         #Valor medio dei test
         print "Valore medio prestazioni"
@@ -104,18 +119,93 @@ class Analizzatore:
         print "Prestazione peggiore test sulla tipologia PARAMS :",  self.PeggiorRisultato (self.TIPO_PARAMS, res)
         print "Prestazione peggiore test sulla tipologia DIMS   :",  self.PeggiorRisultato (self.TIPO_DIMENS, res)
         
-        
-        print "Grafico su parmas"
+        #aggiungo i valori a self.test
+        self.tests ['valMedioParams'].append ((key, self.ValorMedioPrestazioni (self.TIPO_PARAMS, res)))
+        self.tests ['valMedioDms'].append ((key, self.ValorMedioPrestazioni (self.TIPO_DIMENS, res)))
+        self.tests['BestParams'].append ((key, self.MigliorRisultato (self.TIPO_PARAMS, res)))
+        self.tests['BestDims'].append ((key, self.MigliorRisultato (self.TIPO_DIMENS, res)))
+
+        print "Creazione Grafico su parmas"
         self.GraficoParamas (key, res)
         
-        print "grafico su dims"
+        print "Creazione grafico su dims"
         self.GraficoDims (key, res)
+
+        #creo il documento pdf del test
+        self.CreaPaginaPdfTest (key, res)
+
+
+    def EstraiMiglioriTok (self):
+        #per ogni categoria estraggo il migliore
         
-        print "fino a qui"
-        print "aggiungi dati al pdf"
-        self.CreaPaginaPdfTest (key)
+        best = (0, 0)
+        blist = []
+        for ele in self.tests ['valMedioParams']:       
+            if float(ele[1]) > float(best[1]):            
+                best = ele
+                blist = [ele]
+            elif float(ele[1]) == float(best[1]):
+                blist.append (ele)
+                    
+        self.best['valMedioParams'] = blist
+        
+        best = (0, 0)
+        blist = []
+        for ele in self.tests ['valMedioDms']:
+            if float(ele[1]) > float(best[1]):
+                best = ele
+                blist = [ele]
+            elif float(ele[1]) == float(best[1]):
+                blist.append (ele)
+        self.best['valMedioDms'] = blist
+        
+        best = (0, (0, 0))
+        blist = []
+        for ele in self.tests ['BestParams']:   
+            if float(ele[1][1]) > float(best[1][1]):            
+                best = ele
+                blist = [ele]
+            elif float(ele[1][1]) == float(best[1][1]):
+                blist.append (ele)
+        self.best['BestParams'] = blist
+        
+        best = (0, (0, 0))
+        blist = []
+        for ele in self.tests ['BestDims']:   
+            if float(ele[1][1]) > float(best[1][1]):            
+                best = ele
+                blist = [ele]
+            elif float(ele[1][1]) == float(best[1][1]):
+                blist.append (ele)
+        self.best['BestDims'] = blist
+             
+        print "TOKENIZZATORI CON I RISULTATI MIGLIORI"
+        
+        print "Valore medio prestazioni"
+        print "Media prestazioni test sulla tipologia PARAMS : "
+        for i in self.best['valMedioParams']:
+            print "Test : %s \n Value : %f"%(i)
+            
+        print "Media prestazioni test sulla tipologia DIMS : "
+        for i in self.best['valMedioDms']:
+            print "Test : %s \n Value : %f"%(i)
 
-
+        print "Miglior risultato"
+        print "Prestazione migliore test sulla tipologia PARAMS :"
+        for i in self.best['BestParams']:
+            print "Test : %s \ncondizione %s Value : %f"%(i[0], i[1][0], i[1][1])  
+   
+        print "Prestazione migliore test sulla tipologia DIMS :"
+        for i in self.best['BestDims']:
+            print "Test : %s \ncondizione %s Value : %f"%(i[0], i[1][0], i[1][1])  
+            
+        self.CreaDocumentazioneBestTest ()
+        
+        
+    def CreaDocumentazioneBestTest(self):       
+        CreaPdf ().CreaPdfBestTest (self.best)
+        
+        
     def SuddividiTipiTest (self, key):
         r"""
             Questo metodo suddivide i tests del tokenizers
@@ -184,27 +274,38 @@ class Analizzatore:
         self.Plot(testName, self.TIPO_DIMENS, res)
         
         
-    def CreaPaginaPdfTest (self, key):
-        pass
-    
-# TODO BENE BENE    
+    def CreaPaginaPdfTest (self, key, res):
+ 
+        print "crea pagina pdf Controllare"
+        CreaPdf ().CreaPdfTest (key, 
+            self.ValorMedioPrestazioni (self.TIPO_PARAMS, res),
+            self.ValorMedioPrestazioni (self.TIPO_DIMENS, res),  
+            self.MigliorRisultato (self.TIPO_PARAMS, res), 
+            self.MigliorRisultato (self.TIPO_DIMENS, res), 
+            self.PeggiorRisultato (self.TIPO_PARAMS, res), 
+            self.PeggiorRisultato (self.TIPO_DIMENS, res), 
+            self.ltestp[key], 
+            self.ltestd[key])
+        
+        
     def Plot(self, testName, tipo, res):
         r"""
             Questa funzione plotta i dati
             
         """
-        def autolabel(rects):
-            # attach some text labels
-            for rect in rects:
-                height = rect.get_height()
-                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                        '%d' % int(height),
-                        ha='center', va='bottom')
+#        def autolabel(rects):
+#            
+#            # attach some text labels
+#            for rect in rects:
+#                height = rect.get_height()
+#                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+#                        '%d' % int(height),
+#                        ha='center', va='bottom')
                         
-        
         self.xLabel =  [ele[0] for ele in res[tipo]]
-        self.yValue =  [ele[1] for ele in res[tipo]]
-        
+        self.yValue = [round(float(ele[1]) * 100, 2) for ele in res[tipo]]# [ele[1] for ele in res[tipo]]
+#        yValue=self.yValue
+#        yValue=[round(e*100, 3) for e in yValue]
         N = len (self.xLabel)
         ind = np.arange(N)  # the x locations for the groups
         width = 0.35       # the width of the bars 
@@ -214,17 +315,20 @@ class Analizzatore:
         fig, ax = plt.subplots()
         rects1 = ax.bar(ind, valoriY, width, color='r')
         
-        ax.set_ylabel('Scores')
-        ax.set_xlabel('Tipo ricostruzione frase')
-        ax.set_title('test scores')
+        ax.set_ylabel('Scores in percentuale')
+        if tipo == "PARAMS":
+            ax.set_xlabel('Tipo ricostruzione frase')
+        elif tipo == "DIMS":
+            ax.set_xlabel('Tipo ricostruzione frase')
+            
+        ax.set_title('test scores ' + testName)
         ax.set_xticks(ind + width)
         ax.set_xticklabels(tuple(self.xLabel), rotation=90)#rotation ='vertical')
-
-        autolabel(rects1)
-
+        
+       # autolabel(rects1)
+  
         plt.title(testName)
-
-# NEW        
+  
         try:
             mean = sum(self.yValue) / len(self.yValue)
         except ZeroDivisionError:

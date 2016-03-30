@@ -4,9 +4,16 @@ questo file avvia tutti i test, con differenti dimensioni di corpus e combinazio
 di tokenizer ed in fine analizza tutti i dati
 """
 
-from Tools import Tools
+from __future__ import division
+
+from Analizzatore import Analizzatore
 from TestTokenizer import TestTokenizer
-from CreatorePunktTokenize import MyPunktTokenize
+from DimSamplesPunkt import DimSamplesPunkt
+from Tools import Tools
+
+import sys
+import glob
+import os
 
 class Test ():
     r"""
@@ -17,126 +24,104 @@ class Test ():
         return u"vers.0.3.5.b"
     
 
-    def __init__ (self, dimCorpus, dimMyPunktTok):
-        self.folderDati = u"dati\\"
-        self.folderPunkt = u"punkt\\"
-        self.folderTestFiles = u"test files\\"
+    def __init__ (self, dimCorpus):
+        """
+            dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
+            
+        """
         
-        self.dimCorpus = dimCorpus
-        self.dimMyPunktTok = dimMyPunktTok
-        
-        self.tools = Tools ()
-        self.paramCorpusCreationW = self.tools.TAGW
-        self.paramCorpusCreationS = self.tools.TAGS.keys()
-      
-        self.test = TestTokenizer (fileRisultati = "Risultati", n = 10, save = True)
+        self.folderDati = u"dati" + os.path.sep
+        self.folderGrafici = self.folderDati + u"grafici" + os.path.sep
+        self.folderPdfs = self.folderDati + u"pdfs" + os.path.sep
+        self.folderPunkt = u"punkt" + os.path.sep
+        self.folderTestFiles = u"testFiles" + os.path.sep
+        self.tools = Tools (0)
+        self.dimCorpus = [DimSamplesPunkt().nSents (dim) for dim in dimCorpus]
+        # dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
+        #self.dimMyPunktTok = [DimSamplesPunkt().nSents (dim) for dim in dimTrainingMyPunktTok]
+
         self.AvviaTests ()
 
         
-    def CreaMyPukntTok (self):
-        for dim in self.dimMyPunktTok:
-            print "Creazione MypunktTok su %s campioni" % (dim)
-            MyPunktTokenize(dim)
-        
-        
     def AvviaTests (self):
         #CANCELLO I DATI DEI TEST PRECEDENTI
-        self._DellAllFiles ()        
-        #self.CreaMyPukntTok ()
+        self._DellAllFiles ()   
     
-    
-    
-        #PARTO DAL TEST DEL SIMPLE SPACE TOKENIZER
-        for dim in self.dimCorpus:
-            print "Avvio su un campione di ", dim, "elementi"
-            filenameRes = u"Risultati " + unicode(dim)
+        #avvio tutti i test con i parametri impostati
+        TestTokenizer(fileRisultati = "Risultati", save = True, 
+            dimTests = self.dimCorpus, aggiornaDatiTest = False)
         
-            TestTokenizer(fileRisultati = filenameRes, n = dim, save = True).AvviaTests ()       
-        
+        print "Test creati con successo\navvio analisi dei dati"
+        Analizzatore ()
 
 
-
-    def AllTestsSimpleSpaceTokenizerWord (self):
-        #per prima cosa avvio il test nella condizione più semplice
-        paramS = u'SPACE'
-        paramW = u'PARAG_2'
-        #creo il corpus da utilizzare per i tests
-        self.tools.CreaPlainText (tagS = paramS, tagW = paramW)
-        
-        score = self.test.TestSimpleSpaceTokenizerWord (self.tools.corpusTxt, paramS, paramW)
-        
-        if self.EuristicaNoZero (score):
-            #proseguo con gli altri 
-            if self.EuristicaNoZeroAll :
-                if self.EuristicaPrestazioniMedie (soglia = 0.75):
-                    print "Test Passato \n dati da registrare"
-
-
-
-        
     def _DellAllFiles (self):
         #self.tools.DelAllFiles (self.folderPunkt)
+        print "Eliminazione test files precendenti"
         self.tools.DelAllFiles (self.folderTestFiles)
+        print "Elilminazione grafici precedenti"
+        self.tools.DelAllFiles (self.folderGrafici)
+        print "Eliminazione pdfs precedenti"
+        self.tools.DelAllFiles (self.folderPdfs)
+        print "Eliminazione file abbreviazioni precedenti"
+        for file in glob.glob (self.folderDati + '*.abl'):
+            self.tools.DelFile (file)
+        print "Eliminazione file stopwords precedenti"
+        for file in glob.glob (self.folderDati + '*.stopWords'):
+            self.tools.DelFile (file)
+            
+    ########################################################################
+        
+###########################################################################    
+
+def AvvioConEstrazioneDaPaisa ():
+    import paisaSentsExtractor
+
+    print "eliminazione corpus precedente"    
+    #per prima cosa cancello i corpus precedenti
+    a=Tools(0)
     
-    ########################################################################
-    #######################  EURISTICHE  ###################################
-    ########################################################################
-    def EuristicaNoZero (self, testResult):
-        r"""
-            Questa euristica rappresenta la condizione minima per proseguire
-            con i tests
-            il risultato del test non deve essere zero
-        """
-        print "TODO"
-        if testResult:
-            return True
-        else:
-            return False
+    a.DelAllFiles ("corpus" + os.path.sep)
+    a.DelAllFiles ("corpus training" + os.path.sep)
+    
+    print "caricamento nuovo corpus"
+    #carico il nuovo corpus
+    nc = 200000
+    nt = 150000
+    
+    paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus" + os.path.sep, folderList = {nc : "corpusTraining" + os.path.sep})
+   
+    print "Avvio programma di TEST"
+    #avvio i tests  
+    #effettuo i test con dimensione nc, nc/2 e nc/4 che sono pari a:
+    # nc = 2000000
+    # nc/2 = 1000000
+    # nc/4 = 500000
+    Test (dimCorpus = [nc / 2, nc / 4, nc])
+    
+    
+def AvvioSenzaEstrazioneDaPaisa ():
+    #carico il nuovo corpus
+    nc = 20000
+    
+    print "Avvio programma di TEST"
+    #avvio i tests  
+    #effettuo i test con dimensione nc, nc/2 e nc/4 che sono pari a:
+    # nc = 2000000
+    # nc/2 = 1000000
+    # nc/4 = 500000
+    Test (dimCorpus = [nc / 2, nc / 4, nc])
 
 
-    def EuristicaNoZeroAll (self, test):
-        r""" 
-            Questa euristica rappresenta la condizione minima per proseguire 
-            con i tests
-            il test deve ottenere risultati diversi da zero in ogni condizione
-        """
-        print "TODO"
-        for t in test:
-            risultatiTest = t
-            self.EuristicaNoZero (risultatiTest)
-
-
-    def EuristicaPrestazioniMedie (self, testResults, soglia):
-        r"""
-            
-            il test deve ottenere delle prestazioni medie sopra il valore soglia
-        """
-        print "TODO"
-        
-        
-    def EuristicaDelMiglioramento (self, testResults):
-        r"""
-            
-            il test deve ottenere prestazioni in rapporto diretto con le 
-            dimensioni del campione di test. 
-            se i risultati non migliorano con il crescere del numero di campioni
-            il test è scartato
-        """
-        print "TODO"
-    ########################################################################
-        
-        
-###########################################################################       
-       
-def Tests():
-    #dimensione del corpus da testare in numero di frasi
-    ncorpus=[50,100,250]#,500,1000,5000,15000,30000]
-    #dimensione del corpus con cui addestrare i tokenizer
-    nTok = [1000, 15000]
-    #Avvio i Tests
-    Test(dimCorpus = ncorpus, dimMyPunktTok = nTok)
-
-
+def TestMode ():
+    print "test Mode"
+    print
+    print "dimensione dei test espressa in numero di parole. il numero differirà leggermente poichè approssimato alla fine della frase"
+    
+    dimCorpus = [1000, 2000]
+    
+    Test (dimCorpus)
+                
 if __name__ == '__main__':
-    Tests ()
-        
+    AvvioConEstrazioneDaPaisa ()
+    #AvvioSenzaEstrazioneDaPaisa ()
