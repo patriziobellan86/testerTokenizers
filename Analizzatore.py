@@ -53,8 +53,10 @@ class Analizzatore:
         #divido in due liste distinte
             for ele in self.risultati[key]:
                 if ele.has_key ('attributiTok') and ele['attributiTok']:
+                #key,{u'dimTrainingWords': 4000}
                     
-                    filtro[(key, ele['attributiTok'])].append (ele)
+                    print (key, ele['attributiTok'].items()[0])
+                    filtro[(key, ele['attributiTok'].items()[0])].append (ele)
                 else:
                     nofiltro[key].append (ele)
         #ora devo effettuare una selezione tra i test con attributo e 
