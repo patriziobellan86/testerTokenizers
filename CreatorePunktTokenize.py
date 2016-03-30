@@ -37,6 +37,7 @@ class MyPunktTokenize():
         
         #files di abbreviazione
         self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
+        a=self.abbs
         if not self.abbs:
             #se non sono state calcolate le abbreviazioni faccio partire i calcoli
             import Abbreviazione
@@ -64,7 +65,17 @@ class MyPunktTokenize():
         #parametri di default 
         self.D_internal_punctuation = self._internal_punctuation['default']
         self.D_end_sent_punct = self._end_sent_punct['default']
-        self.Dabbs = self.folderDati + "Italian Stopwords.stopWords"
+        
+        stopws = glob.glob (self.folderDati + u"*.stopWords")
+        if len (stopws) == 0:
+            import ItalianStopWords
+            
+            ItalianStopWords.ItalianStopWords().StopWords ()
+            ItalianStopWords.ConfrontaStopwords()
+
+            stopws = glob.glob (self.folderDati + u"*.stopWords")
+            
+        self.Dabbs = self.abbs[0]
         self.D_ABBREV = 0.3
         self.D_IGNORE_ABBREV_PENALITY = False
         self.D_ABBREV_BACKOFF =  5
@@ -86,6 +97,9 @@ class MyPunktTokenize():
                     PignoreAbbrevPenality, PabbrevBackoff, Pcollocation, PsentStarter, 
                     PincludeAllCollocs, PincludeAbbrevCollocs, PminCollocFreq)
         
+        if trainer == -1:
+            return trainer
+            
         trainer = self.Training (trainer, corpusTraining)        
         #Creo il tokenizzatore 
         punktTok = nltk.tokenize.punkt.PunktSentenceTokenizer (trainer.get_params ())
@@ -140,9 +154,11 @@ class MyPunktTokenize():
             
         abbrs = "\n".join (abbrs) 
         abbrs = "Start" + abbrs  + "End."
-            
-        trainer = nltk.tokenize.punkt.PunktTrainer (abbrs, baseClass) 
-        
+#new         
+        try:
+            trainer = nltk.tokenize.punkt.PunktTrainer (abbrs, baseClass) 
+        except ValueError:
+            return -1
         #fase 2 aggiungo i parametri
         trainer.ABBREV = ABBREV
         trainer._IGNORE_ABBREV_PENALITY = IGNORE_ABBREV_PENALITY

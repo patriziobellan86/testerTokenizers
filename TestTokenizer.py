@@ -97,7 +97,7 @@ class TestTokenizer():
         s = u"\n Avvio dei Tests"
         s = s + u"\n Avvio dei tests sui Words Tokenizers\n"
         self.tools.PrintOut (s)
-        self.AvviaTestWordsTokenizers ()
+#        self.AvviaTestWordsTokenizers ()
       
         s = u"\n Avvio dei tests sui Sents Tokenizers\n"
         self.tools.PrintOut (s)
@@ -138,17 +138,17 @@ class TestTokenizer():
         """       
        
         #nltk.tokenize.simple
-        self.TestSimpleLineTokenizerWord ()
-        self.__Save ()
-        self.TestSimpleTokenizer ()
-        self.__Save ()
-        self.TestSimpleTokenizerIta ()
-        self.__Save ()
-        if self.patterns:
-            self.AvviaTestREWordTok (tipo = self.tools.SENT)
-            self.__Save ()
-        self.AvviaTestTextTilingTokenizer ()
-        self.__Save ()
+#        self.TestSimpleLineTokenizerWord ()
+#        self.__Save ()
+#        self.TestSimpleTokenizer ()
+#        self.__Save ()
+#        self.TestSimpleTokenizerIta ()
+#        self.__Save ()
+#        if self.patterns:
+#            self.AvviaTestREWordTok (tipo = self.tools.SENT)
+#            self.__Save ()
+#        self.AvviaTestTextTilingTokenizer ()
+#        self.__Save ()
         self.TestMyPunkt ()
         self.__Save ()
     ########################################################################
@@ -834,6 +834,10 @@ class TestTokenizer():
             
             #creo il tokenizzatore
             tok = CreaTokenizzatore (dimsent, params)    
+            if tok == -1:
+                print "Parametri non utilizzabili per creare il tokenizzatore"
+                print params
+                continue
             
             tipo = self.tools.SENT
             attributiTok =  {'dimTrainingWords': dim}
@@ -902,6 +906,12 @@ class TestTokenizer():
                 params[j] = parametri[j][iParam]
                 # Creo il tok
                 tok = CreaTokenizzatore (dimsent, params)
+#new 
+                if tok == -1:
+                    print "Parametri non utilizzabili per creare il tokenizzatore"
+                    print params
+                                        
+                    continue
                 
                 paramTest = parametri[j][iParam]
                 
@@ -1331,10 +1341,8 @@ def TestThreadNTh ():
     TestTokenizer ("MTHREAD", 1).TestTimeThreads ()
     
 def Tests ():
-    ncorpus=[5000, 7500]
-    
-    #(self, fileRisultati = "Risultati", n = 10, save = True, dimTests = [0]):
-    TestTokenizer(dimTests = ncorpus, save =True, aggiornaDatiTest=True)
+    nc = 20000
+    TestTokenizer (dimTests = [nc / 2, nc / 4, nc], save =True, aggiornaDatiTest=True)
 
     
 if __name__=="__main__":

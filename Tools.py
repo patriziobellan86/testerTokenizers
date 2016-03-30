@@ -228,7 +228,10 @@ class Tools:
                 fileids = fileidsRandom
 ##############             
             else:
-                fileids = fileids[:self.n]
+                #controllo di non eccedere con lo slicing della list
+                if self.n < len (fileids):
+                    fileids = fileids[:self.n]
+                    
             fileids = [os.path.basename(w) for w in fileids]  
             self.corpus = nltk.corpus.ConllCorpusReader(root = self.folderCorpus,
                                             fileids = fileids, columntypes = lst_pos)     

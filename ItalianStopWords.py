@@ -280,7 +280,9 @@ class ItalianStopWords ():
         self.__StopWordsDomainSpecific ()
         self.__StopWordsFrequenza ()
         self.__StopWordsIDF ()
-               
+        
+        ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
+            
             
     def __SaveStopWords (self, filename, stopwords):
         r"""
@@ -316,7 +318,13 @@ class ConfrontaStopwords ():
         stopwords = dict ()
         
         for file in glob.glob (self.folderDati + '*' + self.fileExtStopW):
-            stopwords[os.path.basename(file)[:-len (self.fileExtStopW)] ] = set (self.tools.LoadByte (file))
+            print file
+            k = os.path.basename(file)[:-len (self.fileExtStopW)]
+            stopws = self.tools.LoadByte (file)
+   #new            
+            stopwords[k] = stopws
+            #old            
+            #stopwords[k] = set (stopws)
         
         return stopwords
 
@@ -338,11 +346,33 @@ class ConfrontaStopwords ():
         for k in italianStopwords.keys ():
             for w in italianStopwords[k]:
                 meanStopws [w.lower()] += 1
-        
+        stp=[]
         #Considero stopwords solo quelle che sono presenti in almeno il x % dei casi
-        mean = len(italianStopwords.keys ()) + 1 #+1 è nltk.corpus.stopwords....
-        mean = int((mean * self.perc)) 
+#        media = sum([meanStopws[k] for k in meanStopws.keys ()]) / len (meanStopws.keys ())
+#        print media
+#        media = media * self.perc
+#        print self.perc, media
+#        print sum([meanStopws[k] for k in meanStopws.keys ()])
+#        print len (meanStopws.keys ())
+#        if escludiNltk:
+#            mean = len(italianStopwords.keys ())
+#        else:
+#            mean = len(italianStopwords.keys ()) + 1 #+1 è nltk.corpus.stopwords....
+#        mean = int((mean * self.perc))
+#        print self.perc
+#        #new new 3003206
+#        print type(italianStopwords.keys ()[0])
+#        print italianStopwords.keys ()[0]
+#        
+#        
+        #•mean = len(italianStopwords.keys ()) * self.perc
+        mean = sum([1 for k in italianStopwords.keys () if italianStopwords[k] != list ()]) * (1 - self.perc)
+   
+        print mean
         
+        for w in meanStopws.keys() :
+            if meanStopws[w] >= mean:
+                stp.append(meanStopws[k])
         stp = [w for w in meanStopws.keys() if meanStopws[w] >= mean]
 
         return stp
@@ -448,13 +478,13 @@ def AvviaCalcoli ():
     a = ItalianStopWords ()
     a.StopWords ()
     print "inizio selezione stopwords"
-    cstp = ConfrontaStopwords ()
+    cstp = ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
      
   
 def Confronto2 ():
-    cstp = ConfrontaStopwords ("ItalianEsteso_No_Nltk", 0.65)
-    
+    cstp = ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
     
     
 if __name__=='__main__':
-    Confronto2 ()
+    AvviaCalcoli ()
+    ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)

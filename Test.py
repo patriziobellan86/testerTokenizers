@@ -85,8 +85,8 @@ def AvvioConEstrazioneDaPaisa ():
     
     print "caricamento nuovo corpus"
     #carico il nuovo corpus
-    nc = 20000
-    nt = 15000
+    nc = 200000
+    nt = 150000
     
     paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus\\", folderList = {nc : 'corpus training\\'})
    
