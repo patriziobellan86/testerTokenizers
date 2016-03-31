@@ -12,6 +12,7 @@ import os
 import pickle
 import random
 
+
 class Tools:
     #costanti di classe
     WORD = 1
@@ -33,8 +34,8 @@ class Tools:
         self.TAGW = [self.SPACE, self.AFTER, self.BEFORE]
         
         
-        self.folderCorpus="corpus\\"
-        #self.folderSents="conll sents\\"
+        self.folderCorpus="corpus" + os.path.sep
+        #self.folderSents="conll sents" + os.path.sep
         
         #riepilogo variabili di classe
         #nSamples
@@ -176,7 +177,7 @@ class Tools:
         """
         
         with open(self.fileCsvRisultati, 'ab') as csvfile:
-            writer=csv.writer(csvfile)
+            writer = csv.writer (csvfile)
             writer.writerow( (testName, nIn, nOut, score) )
         
 
@@ -186,7 +187,7 @@ class Tools:
         """
         
         with open(filename, 'ab') as csvfile:
-            writer=csv.writer(csvfile)
+            writer = csv.writer (csvfile)
             writer.writerow( (testName, nSamples, result) )
             
             
@@ -260,7 +261,7 @@ class Tools:
     def CreaPlainText (self, tagS='NONE', tagW='SPACE'):
         r"""
             Questo metodo si occupa di creare il corpus da utilizzare per i tests
-#aggiungere param docstring       
+
             # option 'SPACE'|'BEFORE'|'AFTER'
             #SPACE uno spazio tra ogni parola
             #BEFORE niente spazio tra parola e segno dopo
@@ -285,7 +286,6 @@ class Tools:
                 frase = u""
                 for i in xrange(len(sent)):     
                     if (i+1) < len (sent):
-#new 
                         if not sent[i+1].isalpha() and len(sent[i+1]) == 1:
                              frase = frase + sent[i]
                         else:
@@ -300,7 +300,6 @@ class Tools:
                 frase = u""
                 for i in xrange(len(sent)):     
                     if (i+1) < len (sent):
-### New
                         if not sent[i].isalpha() and len(sent[i]) == 1:
                              frase = frase + sent[i]
                         else:
@@ -316,12 +315,6 @@ class Tools:
 
         return self.corpusTxt                    
  
-
-
-     
-#modificata - modifica in corso
-#DA VERIFICARe
-
       
     #RISULTATI DEI TEST 
     def RisultatiTest(self, testName, datiTest, tipo, words, sents, tag= u""):
@@ -395,7 +388,7 @@ class Tools:
                 jt = 1   #variabile temporanea di sfasamento nella lista fTest
                 
                 while True:
-#Aggiunto controllo fine lista           
+                    #controllo fine lista           
                     if (indTest + jt) >= len(fTest):
                         break
                     #######new aggiunto: + tag +
@@ -473,6 +466,7 @@ class Tools:
             return float(0)
         
 if __name__=='__main__':
-    a=Tools()
+    print "No Test Mode!"
+    Tools(0)
    
            

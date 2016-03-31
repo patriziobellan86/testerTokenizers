@@ -9,6 +9,8 @@ from Tools import Tools
 
 import re
 import glob
+import os
+
 
 class Abbreviazione ():
     r"""
@@ -16,13 +18,13 @@ class Abbreviazione ():
         da utilizzare nella fase di addestramento del punkt tokenizer
     """
     def VERSION (self):
-        return u"vers.0.1.c"
+        return u"vers.3.8.b"
         
         
     def __init__ (self, dimSampPaisa = -1):
         self.fileExtAbbr = u".abl"
-        self.folderDati = u"dati\\"
-        self.folderCorpus="corpus\\"
+        self.folderDati = u"dati" + os.path.sep
+        self.folderCorpus = "corpus" + os.path.sep
         self.fileMorphIt = self.folderDati + u"morphit.utf8.txt"
         self.ABBR = u"SA"
         self.tools = Tools ()
@@ -47,31 +49,14 @@ class Abbreviazione ():
         files = glob.glob (self.folderCorpus + u'*.*')        
         if dim != -1:
             files = files[:dim]
-#        if type(dim) == type(int()):
-#            dim = list(dim)
-#        if type(dim) == type (list()):
-#            _ = list ()            
-#            for ele in dim:
-#                if ele == -1:
-#                    ele = len (files)
-#                _.append (ele)
-#            dim = _
-#            dim.sort ()
 
-#        i = 0   #indice di scorrimento nel campione
-#        j = float(0)   #indice di scorrimento dei files - uso float per evitare overflow
-#        
         for file in files:
             lines = self.tools.LoadFile(file)
             for line in lines:
                 line = line.split (u"\t")
                 if line[4] == self.ABBR:
                     abbrs.add (line[1])
-#            if dim[i] == j:
-#                filename = unicode(str(dim[i])) + u"_" + u"paisa"
-#                self.SaveAbbrFile (filename, list(abbrs))
-#                i += 1
-#            j += 1
+
         filename = u"paisa"
         self.SaveAbbrFile (filename, abbrs)
                 

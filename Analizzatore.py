@@ -13,6 +13,7 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 from pdfTestCreator import CreaPdf
+import os
 
 class Analizzatore:
     r"""questa classe analizza tutti i dati dei tests"""
@@ -25,8 +26,8 @@ class Analizzatore:
         self.tmp=collections.defaultdict(list)
         
         
-        self.folderTest = "test files\\" #cartella files dei risultati dei tests
-        self.folderGrafici = "dati\\grafici\\"
+        self.folderTest = "testFiles" + os.path.sep #cartella files dei risultati dei tests
+        self.folderGrafici = "dati"+ os.path.sep + "grafici" + os.path.sep
         fileRisultati = self.folderTest + "results.pickle"
         #temporaneo        
         #fileRisultati = "result_tmp.pickle"
@@ -54,7 +55,7 @@ class Analizzatore:
             for ele in self.risultati[key]:
                 if ele.has_key ('attributiTok') and ele['attributiTok']:
                 #key,{u'dimTrainingWords': 4000}
-                    
+ #sistemare questa key - tipi errati
                     print (key, ele['attributiTok'].items()[0])
                     filtro[(key, ele['attributiTok'].items()[0])].append (ele)
                 else:
