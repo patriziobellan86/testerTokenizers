@@ -22,11 +22,11 @@ class MyPunktTokenize():
 
 
     def __init__(self):
-        self.folderPunkt = u"punkt\\"
+        self.folderPunkt = u"punkt" + os.path.sep
         self.fileExtPnkt = u".punktTok"
         self.fileExtAbbr = u".abl"
-        self.folderSents = u"corpus\\"
-        self.folderDati = u"dati\\"
+        self.folderSents = u"corpus" + os.path.sep
+        self.folderDati = u"dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle" 
         
         self.tools = Tools(0)  # Strumenti vari
@@ -37,7 +37,7 @@ class MyPunktTokenize():
         
         #files di abbreviazione
         self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
-        a=self.abbs
+
         if not self.abbs:
             #se non sono state calcolate le abbreviazioni faccio partire i calcoli
             import Abbreviazione

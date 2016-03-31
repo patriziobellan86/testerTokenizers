@@ -6,7 +6,7 @@
 from __future__ import unicode_literals
 
 import codecs
-
+import os
 
 class PaisaSentsExtractor ():
     """ 
@@ -19,7 +19,32 @@ class PaisaSentsExtractor ():
         return "0.4.1.b"
      
     def __init__(self, paisa = "paisa.annotated.CoNLL.utf8", nwords = -1,
-                 folderdst = "corpus raw\\", folderList = {-1: "corpus raw\\"}):
+                 folderdst = "corpus raw" + os.path.sep, folderList = {-1: "corpus raw" + os.path.sep}):
+        r"""
+            direttamente durante la creazione dell'oggetto parte l'elaborazione dei dati
+            
+            :param str paisa: path al file
+            :param int nwords: numero di parole totali che si vuole estrarre
+            :param str folderdst: folder di destrinazione delle frasi estratte
+            :param dict folderList: dizionario formato da:
+                                key -> da quale numero di parole iniziare a salvare 
+                                value->la folder dove salvare
+                                
+            :return: None
+            
+            esempio:
+            
+            >>>  PaisaSentsExtractor (nwords = 15000, paisa = paisaFilename, folderdst = "a" + os.path.sep, folderList = {5000 : 'b' + os.path.sep, 10000 : 'c' + os.path.sep})
+            estrarrà:
+            15000 parole, dal file paisaFilename
+            salvandole per prima nella folder a
+            giunto a 5000 le salva nella folder b
+            giunto a 10000 le salva nella folder c
+            
+            
+            
+        """             
+                     
         #per i conteggi uso i float per evitare overflow
         self.folderList = folderList
         self.folderdst = folderdst
@@ -30,15 +55,12 @@ class PaisaSentsExtractor ():
 
 
     def __Elabora(self):
-        
-      #  with codecs.open(self.paisa_corpus, mode='r', encoding='utf-8') as f:   
         period = []
         nfile = float (0) #n di files scritti
         nwords = float (0) #n parole scritte
         
         fpaisa = codecs.open(self.paisa_corpus, mode='r', encoding='utf-8')
         while True:
-#            try:
             line = fpaisa.read (1)
             if line[0] == u"<":
                 if period[0] != u'#' and period[0] != u"" and len(period) > 1:
@@ -82,13 +104,15 @@ class PaisaSentsExtractor ():
             period.append (line)
 
         fpaisa.close ()
+        
+        
 if __name__=='__main__':
     print "Test Mode"
     print
     print "Estrazione di 15000 Parole in 3 cartelle differenti (a, b, c)"
-    #PaisaSentsExtractor (nwords = 15000, folderdst = "corpus raw\\")#, folderList = {10000 : 'corpus training\\'})
-    
-    PaisaSentsExtractor (nwords = 15000, folderdst = "a\\", folderList = {5000 : 'b\\', 10000 : 'c\\'})
+    PaisaSentsExtractor (nwords = 15000, folderdst = "corpus raw" + os.path.sep)#, folderList = {10000 : 'corpus training' + os.path.sep})
+    paisaFilename = "paisa.annotated.CoNLL.utf8"
+    #PaisaSentsExtractor (nwords = 15000, paisa = paisaFilename, folderdst = "a" + os.path.sep, folderList = {5000 : 'b' + os.path.sep, 10000 : 'c' + os.path.sep})
     
     print 'Processo terminato correttamente'
     

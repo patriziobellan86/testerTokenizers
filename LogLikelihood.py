@@ -16,6 +16,8 @@ from math import sqrt
 import Queue
 import threading
 import multiprocessing
+import os
+
 
 class LogLikelihood ():
     r"""
@@ -25,16 +27,16 @@ class LogLikelihood ():
     """
     
     def VERSION (self):
-        return "vers.0.1.a"
+        return "vers.3.8.b"
         
         
     def __init__ (self, n = -1):
         r"""
-            il parametro n indica la quantità di frasi da utilizzare come
-            campione su cui effettuare il test
-            il parametro folder indica la cartella da cui caricare le frasi
+           
+            :param int n: la dimensione su cui effettuare il calcolo del logl.
+              
         """
-        self.folderDati = "dati\\"
+        self.folderDati = "dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle"
         self.__tools = Tools (n) #default -1, cioè tutto il campione
         self.__col_logl = list ()
@@ -45,6 +47,9 @@ class LogLikelihood ():
 
 
     def __FreqFromCorpus (self):
+        r"""
+            Questo metodo estrae le frequenze dal corpus
+        """
         bi = FreqDist(bigrams(self.__tools.words))
         wfr = FreqDist(self.__tools.words)
         
@@ -59,6 +64,9 @@ class LogLikelihood ():
         
     
     def __CalcolaLogL (self):
+        r"""
+            Questo metodo calcola il LogLikelihood
+        """
         while True:
             a, b, ab, N = self.queue.get ()
             
@@ -69,6 +77,9 @@ class LogLikelihood ():
     
     #lancio tutti i threads
     def __MThreard (self):
+        r"""
+            Questo metodo lancia in esecuzione i threads per il calcolo
+        """
         #numero di threads
         nThread = multiprocessing.cpu_count()  
         
@@ -138,10 +149,13 @@ class TestLogLikelihood ():
     """
     def __init__ (self, batterie = [-1], filename = "TestLogLikelihood_newTests.csv"):
         r"""
-            Il parametro batterie è una lista contenente i valori di numerosità
-            del campione su cui andare ad effettuare i tests
+            :param list batterie: lista contenente le dimensioni dei test
+            :param str filename: il nome del file su cui salvare i test
+                
+                :return: i risultati dei test
+                :rtype: tuple
         """
-        self.folderDati = "dati\\"
+        self.folderDati = "dati" + os.path.sep
         self.testFilename = self.folderDati + filename 
                        
         self.tools = Tools(1)
@@ -150,7 +164,9 @@ class TestLogLikelihood ():
 
     
     def AvviaTests (self, batterie):
-        
+        r"""
+            Questo metodo avvia tutti i test
+        """
         for dim in batterie:
             print "Avvio Test su %d campioni" % dim
             #Effettuo il test

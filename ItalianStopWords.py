@@ -26,11 +26,12 @@ def IsAlpha (string):
             return False
     return True
     
-###########################################################################    
+########################################################################### 
+    
 class IDF():
     
     def __init__(self, n = -1):
-        self.folderCorpus = "corpus\\"
+        self.folderCorpus = "corpus" + os.path.sep
         self.tools = Tools(n = n)
         self.D = 0
         self.KD = collections.defaultdict (int)
@@ -136,7 +137,7 @@ class IDF():
         
 class ItalianStopWords ():
     def __init__ (self):
-        self.folderDati = u"dati\\"
+        self.folderDati = u"dati" + os.path.sep
         self.fileExtStopW = u".stopWords"
         self.morphItFileName = self.folderDati + "morphit.utf8.txt"
         
@@ -158,8 +159,6 @@ class ItalianStopWords ():
         tupleAleatorie = [tuple([k, freqs[k]]) for k in freqs.keys()]# if k in candidati]
         mean = sum([x[1] for x in tupleAleatorie]) / len(tupleAleatorie)
         
-        #print len(a.tools.words), len(tupleAleatorie)
-    
         #calcolo la dispersione dei dati intorno alla media
         #e utilizzo lo scostamento come limite per determinare i valori potenziali come stop words
         
@@ -299,7 +298,7 @@ class ConfrontaStopwords ():
         self.perc = perc
         
         
-        self.folderDati = u"dati\\"
+        self.folderDati = u"dati" + os.path.sep
         self.fileExtStopW = u".stopWords"
         self.tools = Tools (1) # uso solo gli strimenti di tools
         
@@ -321,7 +320,7 @@ class ConfrontaStopwords ():
             print file
             k = os.path.basename(file)[:-len (self.fileExtStopW)]
             stopws = self.tools.LoadByte (file)
-   #new            
+       
             stopwords[k] = stopws
             #old            
             #stopwords[k] = set (stopws)
@@ -348,28 +347,8 @@ class ConfrontaStopwords ():
                 meanStopws [w.lower()] += 1
         stp=[]
         #Considero stopwords solo quelle che sono presenti in almeno il x % dei casi
-#        media = sum([meanStopws[k] for k in meanStopws.keys ()]) / len (meanStopws.keys ())
-#        print media
-#        media = media * self.perc
-#        print self.perc, media
-#        print sum([meanStopws[k] for k in meanStopws.keys ()])
-#        print len (meanStopws.keys ())
-#        if escludiNltk:
-#            mean = len(italianStopwords.keys ())
-#        else:
-#            mean = len(italianStopwords.keys ()) + 1 #+1 è nltk.corpus.stopwords....
-#        mean = int((mean * self.perc))
-#        print self.perc
-#        #new new 3003206
-#        print type(italianStopwords.keys ()[0])
-#        print italianStopwords.keys ()[0]
-#        
-#        
-        #•mean = len(italianStopwords.keys ()) * self.perc
         mean = sum([1 for k in italianStopwords.keys () if italianStopwords[k] != list ()]) * (1 - self.perc)
    
-        print mean
-        
         for w in meanStopws.keys() :
             if meanStopws[w] >= mean:
                 stp.append(meanStopws[k])

@@ -7,9 +7,11 @@ Created on Thu Mar 17 11:39:01 2016
 import glob
 
 from Tools import Tools
+import os
+
 
 class DimSamplesPunkt ():
-    def __init__ (self, folderCorpus = u"corpus\\"):
+    def __init__ (self, folderCorpus = u"corpus" + os.path.sep):
         self.folderCorpus = folderCorpus
 
     def nSents (self, nWord):

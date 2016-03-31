@@ -13,6 +13,7 @@ from Tools import Tools
 
 import sys
 import glob
+import os
 
 class Test ():
     r"""
@@ -29,11 +30,11 @@ class Test ():
             
         """
         
-        self.folderDati = u"dati\\"
-        self.folderGrafici = self.folderDati + u"grafici\\"
-        self.folderPdfs = self.folderDati + u"pdfs\\"
-        self.folderPunkt = u"punkt\\"
-        self.folderTestFiles = u"test files\\"
+        self.folderDati = u"dati" + os.path.sep
+        self.folderGrafici = self.folderDati + u"grafici" + os.path.sep
+        self.folderPdfs = self.folderDati + u"pdfs" + os.path.sep
+        self.folderPunkt = u"punkt" + os.path.sep
+        self.folderTestFiles = u"testFiles" + os.path.sep
         self.tools = Tools (0)
         self.dimCorpus = [DimSamplesPunkt().nSents (dim) for dim in dimCorpus]
         # dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
@@ -80,15 +81,15 @@ def AvvioConEstrazioneDaPaisa ():
     #per prima cosa cancello i corpus precedenti
     a=Tools(0)
     
-    a.DelAllFiles ("corpus\\")
-    a.DelAllFiles ('corpus training\\')
+    a.DelAllFiles ("corpus" + os.path.sep)
+    a.DelAllFiles ("corpus training" + os.path.sep)
     
     print "caricamento nuovo corpus"
     #carico il nuovo corpus
     nc = 200000
     nt = 150000
     
-    paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus\\", folderList = {nc : 'corpus training\\'})
+    paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus" + os.path.sep, folderList = {nc : "corpusTraining" + os.path.sep})
    
     print "Avvio programma di TEST"
     #avvio i tests  
@@ -122,5 +123,5 @@ def TestMode ():
     Test (dimCorpus)
                 
 if __name__ == '__main__':
-    #AvvioConEstrazioneDaPaisa ()
-    AvvioSenzaEstrazioneDaPaisa ()
+    AvvioConEstrazioneDaPaisa ()
+    #AvvioSenzaEstrazioneDaPaisa ()

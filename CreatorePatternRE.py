@@ -9,15 +9,15 @@ from __future__ import unicode_literals
 
 from Tools import Tools
 import re
-
+import os
 class CreatorePatternRE():
     def VERSION (self):
         return "vers.0.3.c"
         
         
     def __init__(self):
-        self.folderDati = u"dati\\"
-        self.fileNameRe = self.folderDati+u"RegularExpression.tag"
+        self.folderDati = u"dati" + os.path.sep
+        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
         self.tools = Tools ()
         
         self.patterns = None

@@ -18,14 +18,15 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Para
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
+import os
 
 class CreaPdf():
     def __init__ (self):
-        self.folderDati = "dati\\"
-        self.folderGrafici = self.folderDati + "grafici\\"
-        self.folderPdfs = self.folderDati + "pdfs\\"
+        self.folderDati = "dati" + os.path.sep
+        self.folderGrafici = self.folderDati + "grafici" + os.path.sep
+        self.folderPdfs = self.folderDati + "pdfs" + os.path.sep
         
-        self.filenameLogoUni = self.folderDati + "res\\" + u"unitn.jpg"        
+        self.filenameLogoUni = self.folderDati + "res" + os.path.sep + u"unitn.jpg"        
 
         self.filenameGraphDim =  u" DIMS.png"
         self.filenameGraphParams = u" PARAMS.png"
