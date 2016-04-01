@@ -54,12 +54,13 @@ class Analizzatore:
         #divido in due liste distinte
             for ele in self.risultati[key]:
                 if ele.has_key ('attributiTok') and ele['attributiTok']:
-                #key,{u'dimTrainingWords': 4000}
- #sistemare questa key - tipi errati
-                    print (key, ele['attributiTok'].items()[0])
-                    filtro[(key, ele['attributiTok'].items()[0])].append (ele)
+                    k_2 = ele['attributiTok'].__str__()
+                    filtro[(key, k_2)].append (ele)
+                    #old
+                    #filtro[(key, ele['attributiTok'].items()[0])].append (ele)
                 else:
                     nofiltro[key].append (ele)
+        print "fine print"*5
         #ora devo effettuare una selezione tra i test con attributo e 
         #riportare solo la parametrizzazione migliore
         
@@ -90,7 +91,7 @@ class Analizzatore:
                 nofiltro[lkey[0]].append (bestp)
             if bestd['score'] > 0:
                 nofiltro[lkey[0]].append (bestd)
-          
+        
         self.risultati = nofiltro
 
         for key in self.risultati.keys():
