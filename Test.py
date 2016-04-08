@@ -6,7 +6,7 @@ di tokenizer ed in fine analizza tutti i dati
 
 from __future__ import division
 
-from Analizzatore import Analizzatore
+#from Analizzatore import Analizzatore
 from TestTokenizer import TestTokenizer
 from DimSamplesPunkt import DimSamplesPunkt
 from Tools import Tools
@@ -52,7 +52,9 @@ class Test ():
             dimTests = self.dimCorpus, aggiornaDatiTest = False)
         
         print "Test creati con successo\navvio analisi dei dati"
-        Analizzatore ()
+        
+        #decido di separare i processi di test e di analisi
+        #Analizzatore ()
 
 
     def _DellAllFiles (self):
