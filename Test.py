@@ -35,17 +35,20 @@ class Test (Tools):
             
         """
         #self.folder = '//mnt//8tera//shareclic//lucaNgrams//Patrizio//'
-
+#eredita qui
+        #self = Tools (0)
+        Tools.__init__ (self, 0)
+        
         self.folderDati = self.folder + u"dati" + os.path.sep
         self.folderGrafici = self.folderDati + u"grafici" + os.path.sep
         self.folderPdfs = self.folderDati + u"pdfs" + os.path.sep
         self.folderPunkt = self.folder + u"punkt" + os.path.sep
         self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
-#eredita qui
-        #self = Tools (0)
-        Tools.__init__ (0)
+
+        print "Dim corpus:", dimCorpus
         
-        self.dimCorpus = [DimSamplesPunkt().nSents (dim) for dim in dimCorpus]
+        self.dimCorpus = [DimSamplesPunkt().NumSents (dim) for dim in dimCorpus]
+        
         # dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
         #self.dimMyPunktTok = [DimSamplesPunkt().nSents (dim) for dim in dimTrainingMyPunktTok]
 
@@ -99,6 +102,9 @@ def AvvioConEstrazioneDaPaisa ():
     #carico il nuovo corpus
     nc = 5000000
     nt = 2500000
+    #my pc
+    nc = 50000
+    nt = 25000
     
     paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus" + os.path.sep, folderList = {nc : "corpusTraining" + os.path.sep})
    
@@ -108,12 +114,12 @@ def AvvioConEstrazioneDaPaisa ():
     # nc = 2000000
     # nc/2 = 1000000
     # nc/4 = 500000
-    Test (dimCorpus = [nc / 2, nc / 4, nc])
+    Test (dimCorpus = [int(nc / 2), int(nc / 4), nc])
     
     
 def AvvioSenzaEstrazioneDaPaisa ():
     #carico il nuovo corpus
-    nc = 20000
+    nc = 50000
     
     print "Avvio programma di TEST"
     #avvio i tests  
@@ -134,5 +140,5 @@ def TestMode ():
     Test (dimCorpus)
                 
 if __name__ == '__main__':
-    AvvioConEstrazioneDaPaisa ()
-    #AvvioSenzaEstrazioneDaPaisa ()
+    #AvvioConEstrazioneDaPaisa ()
+    AvvioSenzaEstrazioneDaPaisa ()

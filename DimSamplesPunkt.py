@@ -14,21 +14,26 @@ class DimSamplesPunkt (Tools):
     def __init__ (self, folderCorpus = u"corpus" + os.path.sep):
         
 #        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-        Tools.__init__(0)
+        Tools.__init__(self, 0)
         
         self.folderCorpus =  self.folder + folderCorpus + os.path.sep
-
-    def nSents (self, nWord):
+        print "dimSamplePnktFolder", self.folderCorpus
+        
+    def NumSents (self, nWord):
         r"""            
             dato un numero di parole richiesto, restituisce il numero di frasi 
             si calcolano le frasi ordinate secondo l'ordine di lettura di glob
         """
         nsent = 0
         nw = 0
-	print self.folderCorpus
-        l = glob.glob(self.folderCorpus+'*')
+        
+        l = glob.glob(self.folderCorpus+'*.*')
         for f in l:
-            nw = nw + len (Tools(0).LoadFile (f))
+#new
+            print "tmp f", f
+            nw = nw + len (self.LoadFile (f))
+#old
+            #nw = nw + len (Tools(0).LoadFile (f))
             nsent += 1
             if nw >= nWord:
                 return nsent

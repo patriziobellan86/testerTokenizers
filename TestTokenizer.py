@@ -14,7 +14,7 @@
 
 from __future__ import division, unicode_literals
 
-from Tools import Tools
+from Tools import Tools, CorpusObj
 from TestTextTiling import TextTiling
 from CreatorePunktTokenize import MyPunktTokenize
 from DimSamplesPunkt import DimSamplesPunkt
@@ -67,7 +67,7 @@ class TestTokenizer(Tools):
 #inizializzazione classe ereditata qui!
         
         #self=Tools(n = 0, fileRisultati = (pathFileRisultati))        
-        Tools.__init__ (n = 0, fileRisultati = (fileRisultati))
+        Tools.__init__ (self, n = 0, fileRisultati = (fileRisultati))
 #        
 #
 #        self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
@@ -104,6 +104,8 @@ class TestTokenizer(Tools):
                 self.risultatiTest = collections.defaultdict (list)
         else:
             self.risultatiTest = collections.defaultdict(list)
+#new istr            
+        self.CreaCorpusOrigin ()
         
         self.AvviaTests ()
         
@@ -175,7 +177,18 @@ class TestTokenizer(Tools):
         self.__Save ()
     ########################################################################
         
-
+    def CreaCorpusOrigin (self):
+        print "creazione dei corpus per i test in corso..."
+        for dim in self.dimTests:        
+            for paramS in self.TAGS.keys():
+                    for paramW in self.TAGW:
+                        self.n = dim
+                        self.CaricaCorpus ()
+                        self.CreaPlainText2 (paramS, paramW)
+                        
+                        print "Corpus %s %s %s creato correttamente" % (dim, paramS, paramW)
+                        
+                        
     def __TestTokenizer (self, testName, dimTests, tok, tipo, attributi = None, attrFilename = None): 
         def Tests ():             
             self.queue =  Queue.Queue ()
@@ -194,13 +207,14 @@ class TestTokenizer(Tools):
             ############################
             
         return Tests ()
-############modifica qui    
+        
+   
     def TestTok (self):
         class MyThread  (threading.Thread):
             def __init__ (self, testFunction, numberTh, dati, r):
                 threading.Thread.__init__(self)                
                 self.name = numberTh
-                self.__Test = testFunction
+                self.__test = testFunction
                 self.dati = dati
                 self.r = r
                 
@@ -208,7 +222,7 @@ class TestTokenizer(Tools):
                 
                 try:
                     print "Inizio thread", self.name
-                    self.r.append(self.__Test (*self.dati))
+                    self.r.append(self.__test (*self.dati))
                     print "Fine thread", self.name
                     
                 except:
@@ -224,7 +238,7 @@ class TestTokenizer(Tools):
             #utilizzo tanti thread quanti sono i processori logici dell'elaboratore
             for  i in xrange (1): #dato che il server mi killa il processo decido di mandarne in eseguzione solo 1 alla volta 4): # limito i thread a 4 #multiprocessing.cpu_count()):
             #for  i in xrange (self.queue.qsize ()):
-######new new new            
+          
                 try:
                     if self.queue.empty ():
                         #se non ci sono più dati da elaborare esco dal ciclo di elaborazione
@@ -258,27 +272,44 @@ class TestTokenizer(Tools):
             print s
             s = s + "\nTest su %d in condizioni paramS: %s paramW: %s" % (dim, paramS, paramW)
             #self.PrintOut (s)
+#Modifica Qui!
+
+            corpus = CorpusObj(dim, paramS, paramW)
+            datiOut = tok.tokenize (corpus.Txt())
             
-            #Oggetto per il corpus
-            corpusObj = Tools (dim)
-            corpusObj.CaricaCorpus ()
-   
-            datiOut = tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))
+#old            
+#            #Oggetto per il corpus
+#            corpusObj = Tools (dim)
+#            corpusObj.CaricaCorpus ()
+#   
+#            datiOut = tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))
+########
             
             if tipo == self.SENT:
                 tag = paramS
             else:
                 tag = u""
                 
-            r, score = self.RisultatiTest(testName, datiOut, tipo, corpusObj.words, corpusObj.corpusLst, tag)
+                
+#new new NEW
+            r, score = self.RisultatiTest(testName, datiOut, tipo, corpus.Words(), corpus.Lst (), tag)
+###old                
+#            r, score = self.RisultatiTest(testName, datiOut, tipo, corpusObj.words, corpusObj.corpusLst, tag)
+######
+
+
             self.PrintOut (s + r)   
             #Salvo il file elaborato dal tokenizzatore
             fileTest = None
             if self.save and registra:
                 if not attrFilename:
                     attrFilename = u""
-                    
-                filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(len(corpusObj.words)) + u" " + u".txt"
+
+#new                     
+                filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(len(corpus.Words())) + u" " + u".txt"
+#old
+#                filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(len(corpusObj.words)) + u" " + u".txt"                
+#####
                 fileTest = filename
                 
                 self.SaveFile (filename = filename, dati = datiOut) 
@@ -289,7 +320,7 @@ class TestTokenizer(Tools):
             else:
                 self.PrintOut ("Euristica NoZero Non superata")
                 
-            test = {'paramS':paramS, 'paramW':paramW, 'dim':len(corpusObj.words), 
+            test = {'paramS':paramS, 'paramW':paramW, 'dim':len(corpus.Words()), 
                     'score':score, 'euristicaNoZero': self.EuristicaNoZero (score), 
                     'tipoTest': tipoTest, 'fileTest': fileTest, 'attributiTok': attributi}
             if registra:       
@@ -793,14 +824,21 @@ class TestTokenizer(Tools):
             """
             tupleScores = list ()
             
-            #Oggetto per il corpus      
-            corpusObj = Tools (dim) 
-            corpusObj.CaricaCorpus ()
-              
+#old    
+#            #Oggetto per il corpus      
+#            corpusObj = Tools (dim) 
+#            corpusObj.CaricaCorpus ()
+##
             for paramS in self.TAGS.keys():
-                for paramW in self.TAGW:            
-                    datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))             
-                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
+                for paramW in self.TAGW:     
+#new 
+                    corpus = CorpusObj(dim, paramS, paramW)
+                    datiOut = tok.tokenize (corpus.Txt())
+                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = paramS)
+#old
+#                    datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))                      
+#                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
+
                     tupleScores.append (tuple([paramTest, score]))
                     
             return tupleScores
@@ -828,12 +866,17 @@ class TestTokenizer(Tools):
             tupleScores = list ()
             
             for dim in dims: 
-                corpusObj = Tools (dim)
-                corpusObj.CaricaCorpus ()        
+#new                 
                 
-                datiOut =  tok.tokenize (corpusObj.CreaPlainText (self.normalParamS, self.normalParamW)) 
-                r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = self.normalParamS)
-            
+                corpus = CorpusObj(dim, self.normalParamS, self.normalParamW)
+                datiOut = tok.tokenize (corpus.Txt())
+                r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = self.normalParamS)
+#old
+#                corpusObj = Tools (dim)
+#                corpusObj.CaricaCorpus ()        
+#                datiOut =  tok.tokenize (corpusObj.CreaPlainText (self.normalParamS, self.normalParamW)) 
+#                r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = self.normalParamS)
+####            
                 tupleScores.append (tuple([paramTest, score]))                        
                 
             return tupleScores
@@ -869,7 +912,7 @@ class TestTokenizer(Tools):
         precScore = 0
         attScore = self.sogliaMiglioramento
         dim = self.passoTraining
-        dimsent = DimSamplesPunkt().nSents (dim)
+        dimsent = DimSamplesPunkt().NumSents (dim)
         nsentprec = 0 #questa var mi serve per controllare di non eccedere oltre le dimensioini del corpus di training
         
         print "inizio euristica miglioramento default punkt"
@@ -896,7 +939,7 @@ class TestTokenizer(Tools):
             nsentprec = dimsent         
             #precScore = attScore
             dim = dim + self.passoTraining
-            dimsent = DimSamplesPunkt().nSents (dim)                            
+            dimsent = DimSamplesPunkt().NumSents (dim)                            
         print "fine stima dimensione di training"
         print "inizio test su default punkt tok"
         #Effettuo e registro il test con i parametri standard
@@ -963,7 +1006,7 @@ class TestTokenizer(Tools):
         precScore = 0
         attScore = self.sogliaMiglioramento
         dim = self.passoTraining
-        dimsent = DimSamplesPunkt().nSents (dim)
+        dimsent = DimSamplesPunkt().NumSents (dim)
         nsentprec = 0 #questa var mi serve per controllare di non eccedere oltre le dimensioini del corpus di training
         print "inizio stima dim training my punkt"
         while self.EuristicaMiglioramento (precScore, attScore):
@@ -986,7 +1029,7 @@ class TestTokenizer(Tools):
             
             nsentprec = dimsent  
             dim = dim + self.passoTraining
-            dimsent = DimSamplesPunkt().nSents (dim)                            
+            dimsent = DimSamplesPunkt().NumSents (dim)                            
 
         print "fine stima dimensione di training"
         print "inizio test my punkt"
@@ -1055,16 +1098,22 @@ class TestTokenizer(Tools):
             """
            
             tupleScores = list ()
-            
-            #Oggetto per il corpus      
-            corpusObj = Tools (dim) 
-            corpusObj.CaricaCorpus ()
-              
+#old
+#            #Oggetto per il corpus      
+#            corpusObj = Tools (dim) 
+#            corpusObj.CaricaCorpus ()
+#              
             for paramS in self.TAGS.keys():
                 for paramW in self.TAGW:  
                     try:
-                        datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))             
-                        r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
+#new 
+                        corpus = CorpusObj(dim, paramS, paramW)
+                        datiOut = tok.tokenize (corpus.Txt())
+                        r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = paramS)
+#old
+#                        datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))             
+#                        r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
+####àà                    
                         tupleScores.append (tuple([paramTest, score]))
                     except:
                         #se il tokenizzatore non è applicabile al testo
@@ -1094,12 +1143,19 @@ class TestTokenizer(Tools):
             tupleScores = list ()
             
             for dim in dims: 
-                corpusObj = Tools (dim)
-                corpusObj.CaricaCorpus ()        
-                try:
-                    datiOut =  tok.tokenize (corpusObj.CreaPlainText (self.normalParamS, self.normalParamW)) 
-                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = self.normalParamS)
-            
+#old                
+#                corpusObj = Tools (dim)
+#                corpusObj.CaricaCorpus ()        
+#                try:
+#                    datiOut =  tok.tokenize (corpusObj.CreaPlainText (self.normalParamS, self.normalParamW)) 
+#                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = self.normalParamS)
+#            
+#new 
+                corpus = CorpusObj(dim, self.normalParamS, self.normalParamW)
+                try:                
+                    datiOut = tok.tokenize (corpus.Txt())
+                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = self.normalParamS)
+#########
                     tupleScores.append (tuple([paramTest, score]))                        
                 except:
                     #se il tokenizzatore non è applicabile al testo

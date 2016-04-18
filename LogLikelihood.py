@@ -43,7 +43,7 @@ class LogLikelihood ():
         """
         #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
         #self = Tools (n) #default -1, cioè tutto il campione
-        Tools.__init__ (n)
+        Tools.__init__ (self, n)
         
         #self.folderDati = self.folder + "dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle"
@@ -165,7 +165,7 @@ class TestLogLikelihood (Tools):
                 :return: i risultati dei test
                 :rtype: tuple
         """
-         Tools.__init__ (1)
+         Tools.__init__ (self, 1)
         #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
        
         #self = Tools(1)
