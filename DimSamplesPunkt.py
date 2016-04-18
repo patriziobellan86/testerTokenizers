@@ -10,9 +10,13 @@ from Tools import Tools
 import os
 
 
-class DimSamplesPunkt ():
+class DimSamplesPunkt (Tools):
     def __init__ (self, folderCorpus = u"corpus" + os.path.sep):
-        self.folderCorpus = folderCorpus
+        
+#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+        Tools.__init__(0)
+        
+        self.folderCorpus =  self.folder + folderCorpus + os.path.sep
 
     def nSents (self, nWord):
         r"""            
@@ -21,6 +25,7 @@ class DimSamplesPunkt ():
         """
         nsent = 0
         nw = 0
+	print self.folderCorpus
         l = glob.glob(self.folderCorpus+'*')
         for f in l:
             nw = nw + len (Tools(0).LoadFile (f))

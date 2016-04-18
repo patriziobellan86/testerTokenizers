@@ -1,0 +1,5 @@
+path=PathDirWork
+dimCorpus=50000
+dimCorpusDefault=25000
+dimTraining=2500
+dimTrainingDefault=5000

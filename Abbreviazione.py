@@ -12,7 +12,7 @@ import glob
 import os
 
 
-class Abbreviazione ():
+class Abbreviazione (Tools):
     r"""
         Questa classe si occupa di trovare e registrare le abbreviazioni 
         da utilizzare nella fase di addestramento del punkt tokenizer
@@ -22,12 +22,17 @@ class Abbreviazione ():
         
         
     def __init__ (self, dimSampPaisa = -1):
-        self.fileExtAbbr = u".abl"
-        self.folderDati = u"dati" + os.path.sep
-        self.folderCorpus = "corpus" + os.path.sep
-        self.fileMorphIt = self.folderDati + u"morphit.utf8.txt"
+        Tools.__init__ (-1)
+        
+#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+#        self.fileExtAbbr = '.abl'
+#        self.folderDati = self.folder + 'dati' + os.path.sep
+#        self.folderCorpus = self.folder + 'corpus' + os.path.sep
+#
+#        self.morphItFileName = self.folderDati + u"morphit.utf8.txt"
+
         self.ABBR = u"SA"
-        self.tools = Tools ()
+        
         
         self.RegistraDaPaisa (dimSampPaisa)
         self.RegistraDaMorphIt ()
@@ -51,7 +56,7 @@ class Abbreviazione ():
             files = files[:dim]
 
         for file in files:
-            lines = self.tools.LoadFile(file)
+            lines = self.LoadFile(file)
             for line in lines:
                 line = line.split (u"\t")
                 if line[4] == self.ABBR:
@@ -73,8 +78,8 @@ class Abbreviazione ():
         pat_abl = re.compile(pattern_abl)
 
         #Leggo morphIt  
-        print self.fileMorphIt 
-        for line in self.tools.LoadFile(self.fileMorphIt):
+        print self.morphItFileName 
+        for line in self.LoadFile(self.morphItFileName):
             line = line.split ()
             if len(line) == 3:
                 match=re.match(pat_abl, line[2])     
@@ -90,7 +95,7 @@ class Abbreviazione ():
             Questo metodo salva il file delle abbreviazioni
         """
         filename = self.folderDati + filename + self.fileExtAbbr
-        self.tools.SaveByte (dati = abbrs, filename = filename)
+        self.SaveByte (dati = abbrs, filename = filename)
        
 def Test ():
     numSamplesPaisa = -1

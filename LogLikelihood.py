@@ -3,6 +3,11 @@
 Created on Tue Mar 08 15:57:18 2016
 
 @author: Patrizio
+
+
+            usato ereditarietà di:
+            tools
+                    
 """
 
 from __future__ import division
@@ -36,13 +41,17 @@ class LogLikelihood ():
             :param int n: la dimensione su cui effettuare il calcolo del logl.
               
         """
-        self.folderDati = "dati" + os.path.sep
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+        #self = Tools (n) #default -1, cioè tutto il campione
+        Tools.__init__ (n)
+        
+        #self.folderDati = self.folder + "dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle"
-        self.__tools = Tools (n) #default -1, cioè tutto il campione
+        
         self.__col_logl = list ()
         self.queue = Queue.Queue ()
         
-        self.__tools.CaricaCorpus ()
+        self.CaricaCorpus ()
 
 
 
@@ -50,8 +59,8 @@ class LogLikelihood ():
         r"""
             Questo metodo estrae le frequenze dal corpus
         """
-        bi = FreqDist(bigrams(self.__tools.words))
-        wfr = FreqDist(self.__tools.words)
+        bi = FreqDist(bigrams(self.words))
+        wfr = FreqDist(self.words)
         
         #popolo la coda        
         for eles in bi.keys():
@@ -82,7 +91,8 @@ class LogLikelihood ():
         """
         #numero di threads
         nThread = multiprocessing.cpu_count()  
-        
+        nThread = 4 #limito il numero dei thread
+
         while not self.queue.empty ():
             #avvio tanti threads quanti sono il numero di processori logici
             #disponibili
@@ -115,7 +125,7 @@ class LogLikelihood ():
         print "logl:", logl
         
         #salvo il logl trovato
-        self.__tools.SaveByte ([logl], self.loglFilename) 
+        self.SaveByte ([logl], self.loglFilename) 
         
         return [logl]
         
@@ -127,23 +137,23 @@ class LogLikelihood ():
             1* - 1/3 del campione
         """
         ress = []
-        dimcorp = len(glob.glob (self.__tools.folderCorpus + '*.*'))
+        dimcorp = len(glob.glob (self.folderCorpus + '*.*'))
         #suddivido gli step
         for i in range(1,4):
             #calcolo il logl
             dim = int (i / 3 * dimcorp )
-            self.__tools.n = dim
-            self.__tools.CaricaCorpus ()
+            self.n = dim
+            self.CaricaCorpus ()
             ress.append (self.LogLikelihood ()[0])
         #registro i dati
-        self.__tools.DelFile (self.loglFilename)
-        self.__tools.SaveByte (ress, self.loglFilename) 
+        self.DelFile (self.loglFilename)
+        self.SaveByte (ress, self.loglFilename) 
         
         return ress
     
 ############################################################################
 
-class TestLogLikelihood ():
+class TestLogLikelihood (Tools):
     r"""
         Questa classe modella la batteria di test da effettuare
     """
@@ -155,10 +165,15 @@ class TestLogLikelihood ():
                 :return: i risultati dei test
                 :rtype: tuple
         """
-        self.folderDati = "dati" + os.path.sep
+         Tools.__init__ (1)
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+       
+        #self = Tools(1)
+        
+        #self.folderDati = self.folder + "dati" + os.path.sep
         self.testFilename = self.folderDati + filename 
                        
-        self.tools = Tools(1)
+        
         
         self.AvviaTests (batterie)
 
@@ -177,10 +192,10 @@ class TestLogLikelihood ():
             
             print "LogLikelihood pari a %f" % result
             #salvo i log trovati    
-            self.tools.SaveTestCsv (filename = filename,testName = "Loglikelihood",
+            self.SaveTestCsv (filename = filename,testName = "Loglikelihood",
                                     nSamples = dim, result = result)
             
-            self.tools.SaveByte (result, self.loglFilename)                        
+            self.SaveByte (result, self.loglFilename)                        
         print "Tests Eseguiti correttamente"
         
  

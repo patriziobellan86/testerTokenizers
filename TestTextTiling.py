@@ -36,11 +36,13 @@ class TextTiling:
 #    
 #        self.nt = nThread   #numero di thread da utilizzare per i compiti
 #        
-        self.folderDati = u"dati" + os.path.sep
+        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+        self.folderDati = self.folder + "dati" + os.path.sep
         self.fileExtStopW = u".stopWords"
+
         self.tools = Tools (0)  #Strumenti vari
 #        self.save = save
-        self.folderTestFiles = u"test files" + os.path.sep
+        self.folderTestFiles = self.folder + "test files" + os.path.sep
         
         #BLOCK_COMPARISON, VOCABULARY_INTRODUCTION = 0, 1
         self.similarityMethod={'BLOCK_COMPARISON':0,'VOCABULARY_INTRODUCTION':1}       

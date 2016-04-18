@@ -28,16 +28,25 @@ def IsAlpha (string):
     
 ########################################################################### 
     
-class IDF():
+class IDF(Tools):
     
     def __init__(self, n = -1):
-        self.folderCorpus = "corpus" + os.path.sep
-        self.tools = Tools(n = n)
+#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+#
+#        self.folderCorpus = self.folder + "corpus" + os.path.sep
+#        
+#
+#        self = Tools(n = n)
+    
+        Tools.__init__ (n)
+
+
+
         self.D = 0
         self.KD = collections.defaultdict (int)
         self.idfs = dict ()
         
-        self.tools.CaricaCorpus()               
+        self.CaricaCorpus()               
     
     
     def AvviaCalcoli (self):
@@ -46,7 +55,7 @@ class IDF():
         
         
     def VocsDocs (self):
-        docs = self.CreaDocs (self.tools.sents)
+        docs = self.CreaDocs (self.sents)
         self.D =len(docs)
 
         for doc in docs:
@@ -135,14 +144,18 @@ class IDF():
 ###########################################################################
         
         
-class ItalianStopWords ():
+class ItalianStopWords ():Tools
     def __init__ (self):
-        self.folderDati = u"dati" + os.path.sep
-        self.fileExtStopW = u".stopWords"
-        self.morphItFileName = self.folderDati + "morphit.utf8.txt"
-        
-        self.tools = Tools (-1)    #carico tutto il corpus
-        
+        Tools.__init__ (-1)
+
+#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+#
+#        self.folderDati = self.folder + u"dati" + os.path.sep
+#        self.fileExtStopW = u".stopWords"
+#        self.morphItFileName = self.folderDati + "morphit.utf8.txt"
+#        
+#        self = Tools (-1)    #carico tutto il corpus
+#        
 #OK    
     def __StopWordsFrequenza (self):
         r"""
@@ -150,9 +163,9 @@ class ItalianStopWords ():
             base alla loro frequenza assoluta rispetto al corpus analizzato
         """
         
-        self.tools.CaricaCorpus ()
+        self.CaricaCorpus ()
         #calcolo la distribuzione di frequenza del corpus 
-        freqs = nltk.FreqDist ([w.lower() for w in self.tools.words])
+        freqs = nltk.FreqDist ([w.lower() for w in self.words])
         
         #candidati = [w for w in freqs.keys() if IsAlpha(w) and freqs.freq(w)>0]
         #traformo le distribuzione in tuple  - usato in fase di sviluppo del metodo
@@ -259,7 +272,7 @@ class ItalianStopWords ():
         
         stopws = set ()        
         #Leggo morphIt   
-        for line in self.tools.LoadFile(self.morphItFileName):
+        for line in self.LoadFile(self.morphItFileName):
             line = line.split ()
             if len(line) == 3:
                 #verifico se la parola presa in esame appartiene al gruppo di stopwords
@@ -287,21 +300,26 @@ class ItalianStopWords ():
         r"""
             Questo metodo salva l'elenco su file
         """
-        self.tools.DelFile (filename)
-        self.tools.SaveByte (filename = filename, dati = stopwords)
+        self.DelFile (filename)
+        self.SaveByte (filename = filename, dati = stopwords)
 
 ###########################################################################
 
-class ConfrontaStopwords ():
+class ConfrontaStopwords (Tools):
     def __init__ (self, filenameStopwords = "ItalianStopwords", perc = 0.75):
-        self.fileNameStopwords = filenameStopwords
+        Tools.__init__ (1)
+        
+#        
+#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+
+        self.fileNameStopwords = self.folder + filenameStopwords
         self.perc = perc
         
-        
-        self.folderDati = u"dati" + os.path.sep
-        self.fileExtStopW = u".stopWords"
-        self.tools = Tools (1) # uso solo gli strimenti di tools
-        
+#        
+#        self.folderDati = self.folder + u"dati" + os.path.sep
+#        self.fileExtStopW = u".stopWords"
+#        self = Tools (1) # uso solo gli strimenti di tools
+#        
         stp = self.Confronta (self.LoadStopwords (), escludiNltk = True)
         self.PrintStp (stp)
         self.SalvaFileStopwords(stp)
@@ -319,7 +337,7 @@ class ConfrontaStopwords ():
         for file in glob.glob (self.folderDati + '*' + self.fileExtStopW):
             print file
             k = os.path.basename(file)[:-len (self.fileExtStopW)]
-            stopws = self.tools.LoadByte (file)
+            stopws = self.LoadByte (file)
        
             stopwords[k] = stopws
             #old            
@@ -366,8 +384,8 @@ class ConfrontaStopwords ():
             
     def SalvaFileStopwords (self, dati):
         filename = self.folderDati + self.fileNameStopwords + self.fileExtStopW
-        self.tools.DelFile (filename)
-        self.tools.SaveByte (filename = filename, dati = dati)
+        self.DelFile (filename)
+        self.SaveByte (filename = filename, dati = dati)
         
         
 ###########################################################################
@@ -423,7 +441,7 @@ def TestStopWFr ():
     tupleAleatorie = [tuple([k, freqs[k]]) for k in freqs.keys()]# if k in candidati]
     mean = sum([x[1] for x in tupleAleatorie]) / len(tupleAleatorie)
     
-    #print len(a.tools.words), len(tupleAleatorie)
+    #print len(a.words), len(tupleAleatorie)
 
     #calcolo la dispersione dei dati intorno alla media
     #e utilizzo lo scostamento come limite per determinare i valori potenziali come stop words
