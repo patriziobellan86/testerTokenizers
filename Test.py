@@ -103,9 +103,9 @@ def AvvioConEstrazioneDaPaisa ():
     nc = 5000000
     nt = 2500000
     #my pc
-    nc = 50000
-    nt = 25000
-    
+#    nc = 50000
+#    nt = 25000
+#    
     paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus" + os.path.sep, folderList = {nc : "corpusTraining" + os.path.sep})
    
     print "Avvio programma di TEST"
@@ -140,5 +140,5 @@ def TestMode ():
     Test (dimCorpus)
                 
 if __name__ == '__main__':
-    #AvvioConEstrazioneDaPaisa ()
-    AvvioSenzaEstrazioneDaPaisa ()
+    AvvioConEstrazioneDaPaisa ()
+    #AvvioSenzaEstrazioneDaPaisa ()

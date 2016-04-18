@@ -55,7 +55,7 @@ class PaisaSentsExtractor (Tools):
         self.folderList = folderList
         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + folderdst
         #my pc
-        self.folderdst = self.folder + os.path.sep + folderdst
+        #self.folderdst = self.folder + os.path.sep + folderdst
                 
         self.extfile = ".conll.txt"
         self.paisa_corpus = self.folder +  paisa
@@ -105,7 +105,7 @@ class PaisaSentsExtractor (Tools):
                                     if len(self.folderList.keys ()) > 0 and nwords >= min(self.folderList.keys ()) and self.folderList.keys() != [-1]:
                                         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + self.folderList [min(self.folderList.keys())]
                                         #my pc
-                                        self.folderdst = self.folder + self.folderList [min(self.folderList.keys())]
+                                        #self.folderdst = self.folder + self.folderList [min(self.folderList.keys())]
                                         del self.folderList[min(self.folderList.keys())]
                                     
                                     frase = []
