@@ -82,11 +82,11 @@ class TestTokenizer(Tools):
 #        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
 #        self.stopwordsFilename = self.folderDati + u"Italian Stopwords.stopWords"
 #        self.fileExtPnkt = u".punktTok"
-
-
-   
-        self.paramCorpusCreationW = self.TAGW
-        self.paramCorpusCreationS = self.TAGS.keys()
+        
+#        
+#        self.paramCorpusCreationW = self.TAGW
+#        self.paramCorpusCreationS = self.TAGS.keys()
+#        
         #Condizione Semplice
         self.simpleParamS = 'PARAG_2'
         self.simpleParamW = 'SPACE'
@@ -181,8 +181,8 @@ class TestTokenizer(Tools):
             self.queue =  Queue.Queue ()
             #popolo la coda di test
             dim = dimTests[0]
-            for paramS in self.paramCorpusCreationS:
-                for paramW in self.paramCorpusCreationW:            
+            for paramS in self.TAGS.keys():
+                for paramW in self.TAGW:            
                     self.queue.put((testName, tok, dim, paramS, paramW, 
                         self.TIPO_PARAMS, tipo, attributi, attrFilename))
             for dim in dimTests:
@@ -797,8 +797,8 @@ class TestTokenizer(Tools):
             corpusObj = Tools (dim) 
             corpusObj.CaricaCorpus ()
               
-            for paramS in self.paramCorpusCreationS:
-                for paramW in self.paramCorpusCreationW:            
+            for paramS in self.TAGS.keys():
+                for paramW in self.TAGW:            
                     datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))             
                     r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
                     tupleScores.append (tuple([paramTest, score]))
@@ -1060,8 +1060,8 @@ class TestTokenizer(Tools):
             corpusObj = Tools (dim) 
             corpusObj.CaricaCorpus ()
               
-            for paramS in self.paramCorpusCreationS:
-                for paramW in self.paramCorpusCreationW:  
+            for paramS in self.TAGS.keys():
+                for paramW in self.TAGW:  
                     try:
                         datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))             
                         r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
@@ -1256,8 +1256,8 @@ class TestTokenizer(Tools):
                 tools = Tools(n = n)
                 tools.CaricaCorpus ()
                 
-                for paramS in self.paramCorpusCreationS:
-                    for paramW in self.paramCorpusCreationW:
+                for paramS in self.TAGS.keys():
+                    for paramW in self.TAGW:
                         #creo il corpus da utilizzare per i tests
                         corpus = tools.CreaPlainText (tagS = paramS, tagW = paramW) 
                         
@@ -1297,8 +1297,8 @@ class TestTokenizer(Tools):
                 tools = Tools(n = n)
                 tools.CaricaCorpus ()
                 
-                for paramS in self.paramCorpusCreationS:
-                    for paramW in self.paramCorpusCreationW:
+                for paramS in self.TAGS.keys():
+                    for paramW in self.TAGW:
                         #creo il corpus da utilizzare per i tests
                         corpus = tools.CreaPlainText (tagS = paramS, tagW = paramW) 
                         
