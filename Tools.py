@@ -33,9 +33,30 @@ class Tools:
 
         self.TAGW = [self.SPACE, self.AFTER, self.BEFORE]
         
+        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+        self.folderCorpus = self.folder + "corpus" + os.path.sep
         
-        self.folderCorpus="corpus" + os.path.sep
-        #self.folderSents="conll sents" + os.path.sep
+        
+        self.folderDati = self.folder + "dati" + os.path.sep
+        
+        self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
+
+        self.folderPunkt = self.folder + u"punkt" + os.path.sep
+        self.fileExtPnkt = u".punktTok"
+        self.folderDati = self.folder + u"dati" + os.path.sep        
+        
+        self.folderCorpusTraining = self.folder + "corpusTraining" + os.path.sep
+        
+        self.fileRisultati = self.folderTestFiles + "results.pickle"
+        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
+        self.stopwordsFilename = self.folderDati + u"Italian Stopwords.stopWords"
+        self.fileExtPnkt = u".punktTok"
+        self.fileExtAbbr = '.abl'
+        self.fileExtStopW = u".stopWords"
+        self.morphItFileName = self.folderDati + "morphit.utf8.txt"
+        
+        
+        
         
         #riepilogo variabili di classe
         #nSamples
@@ -52,9 +73,10 @@ class Tools:
         #tmp plain text
         self.corpusTxt = None
         self.corpusLst = None
-        #nome file 
-        self.fileRisultati = fileRisultati + u".txt"
-        self.fileCsvRisultati = fileRisultati + u".csv"
+        
+        #nomi files
+        self.fileRisultati = self.folderTestFiles + fileRisultati + u".txt"
+        self.fileCsvRisultati = self.folderTestFiles + fileRisultati + u".csv"
         
         
         
@@ -89,6 +111,7 @@ class Tools:
             :param list dati: dati
             :param str filename: path file
         """
+	print "temporaneo", filename
         with codecs.open (filename, "a", "utf-8") as f:
             f.writelines (dati)
                        
@@ -209,7 +232,7 @@ class Tools:
         """
 #NEW        
         if folder:
-            self.folderCorpus = folder
+            self.folderCorpus = self.folder + folder + os.path.sep
         
 #####MIGLIORATA FUNZIONE ###################        
 
@@ -343,10 +366,10 @@ class Tools:
         s = s + u"\n" + u"-" * 55
 
 #        self.SaveResCsv(testName = testName, nIn = nInput, nOut = nTest, score = score)
-        if tipo == self.WORD:
-            self.SaveResCsv(testName = testName, nIn = nInput, nOut =  len(datiTest), score = score)
-        elif tipo == self.SENT:
-            self.SaveResCsv(testName = testName, nIn = nInput, nOut =  len(datiTest), score = score)
+#        if tipo == self.WORD:
+#            self.SaveResCsv(testName = testName, nIn = nInput, nOut =  len(datiTest), score = score)
+#        elif tipo == self.SENT:
+#            self.SaveResCsv(testName = testName, nIn = nInput, nOut =  len(datiTest), score = score)
             
         return s , score
         

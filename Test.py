@@ -2,6 +2,11 @@
 """
 questo file avvia tutti i test, con differenti dimensioni di corpus e combinazioni
 di tokenizer ed in fine analizza tutti i dati
+
+
+            usato ereditarietà di:
+            tools
+                    
 """
 
 from __future__ import division
@@ -15,7 +20,7 @@ import sys
 import glob
 import os
 
-class Test ():
+class Test (Tools):
     r"""
         Questa classe avvia tutti i tests
     """
@@ -29,13 +34,17 @@ class Test ():
             dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
             
         """
-        
-        self.folderDati = u"dati" + os.path.sep
+        #self.folder = '//mnt//8tera//shareclic//lucaNgrams//Patrizio//'
+
+        self.folderDati = self.folder + u"dati" + os.path.sep
         self.folderGrafici = self.folderDati + u"grafici" + os.path.sep
         self.folderPdfs = self.folderDati + u"pdfs" + os.path.sep
-        self.folderPunkt = u"punkt" + os.path.sep
-        self.folderTestFiles = u"testFiles" + os.path.sep
-        self.tools = Tools (0)
+        self.folderPunkt = self.folder + u"punkt" + os.path.sep
+        self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
+#eredita qui
+        #self = Tools (0)
+        Tools.__init__ (0)
+        
         self.dimCorpus = [DimSamplesPunkt().nSents (dim) for dim in dimCorpus]
         # dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
         #self.dimMyPunktTok = [DimSamplesPunkt().nSents (dim) for dim in dimTrainingMyPunktTok]
@@ -58,19 +67,19 @@ class Test ():
 
 
     def _DellAllFiles (self):
-        #self.tools.DelAllFiles (self.folderPunkt)
+        #self.DelAllFiles (self.folderPunkt)
         print "Eliminazione test files precendenti"
-        self.tools.DelAllFiles (self.folderTestFiles)
+        self.DelAllFiles (self.folderTestFiles)
         print "Elilminazione grafici precedenti"
-        self.tools.DelAllFiles (self.folderGrafici)
+        self.DelAllFiles (self.folderGrafici)
         print "Eliminazione pdfs precedenti"
-        self.tools.DelAllFiles (self.folderPdfs)
+        self.DelAllFiles (self.folderPdfs)
         print "Eliminazione file abbreviazioni precedenti"
         for file in glob.glob (self.folderDati + '*.abl'):
-            self.tools.DelFile (file)
+            self.DelFile (file)
         print "Eliminazione file stopwords precedenti"
         for file in glob.glob (self.folderDati + '*.stopWords'):
-            self.tools.DelFile (file)
+            self.DelFile (file)
             
     ########################################################################
         
@@ -82,14 +91,14 @@ def AvvioConEstrazioneDaPaisa ():
     print "eliminazione corpus precedente"    
     #per prima cosa cancello i corpus precedenti
     a=Tools(0)
-    
-    a.DelAllFiles ("corpus" + os.path.sep)
-    a.DelAllFiles ("corpus training" + os.path.sep)
+    folder = '//mnt//8tera//shareclic//lucaNgrams//Patrizio//'    
+    a.DelAllFiles (folder + "corpus" + os.path.sep)
+    a.DelAllFiles (folder + "corpusTraining" + os.path.sep)
     
     print "caricamento nuovo corpus"
     #carico il nuovo corpus
-    nc = 200000
-    nt = 150000
+    nc = 5000000
+    nt = 2500000
     
     paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus" + os.path.sep, folderList = {nc : "corpusTraining" + os.path.sep})
    
