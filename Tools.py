@@ -36,7 +36,7 @@ class Tools:
 #share clic
         self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
 #my pc
-        self.folder = "C:\\Users\\Patrizio\\Documents\\prova testi\\tokenizer\\0.3.8.3.1\\"
+        #self.folder = "C:\\Users\\Patrizio\\Documents\\prova testi\\tokenizer\\0.3.8.3.1\\"
         
         
         
@@ -373,17 +373,17 @@ class Tools:
         corpus=u""
         for sent in self.sents:
             if tagW == self.SPACE:
-                frase = u" ".join(sent) + self.TAGS[tagS]
+                frase = u" ".join (sent) + self.TAGS[tagS]
                 corpus = corpus + frase
-                self.corpusLst.append(frase)
-                frase = ""
+                self.corpusLst.append (frase)
+              
                 continue
             ############################ ok
             elif tagW == self.AFTER:
                 frase = u""
-                for i in xrange(len(sent)):     
+                for i in xrange (len(sent)):     
                     if (i+1) < len (sent):
-                        if not sent[i+1].isalpha() and len(sent[i+1]) == 1:
+                        if not sent[i+1].isalpha () and len (sent[i+1]) == 1:
                              frase = frase + sent[i]
                         else:
                              frase = frase + sent[i] + u" "
@@ -392,24 +392,23 @@ class Tools:
                 frase = frase + self.TAGS[tagS]
                 self.corpusLst.append(frase)    
                 corpus=corpus+frase
-                frase = ""
+             
                 continue
             ####################### ok
             elif tagW == self.BEFORE:
                 frase = u""
                 for i in xrange(len(sent)):     
                     if (i+1) < len (sent):
-                        if not sent[i].isalpha() and len(sent[i]) == 1:
+                        if not sent[i].isalpha () and len (sent[i]) == 1:
                              frase = frase + sent[i]
                         else:
                              frase = frase + sent[i] + u" "
                     else:
                          frase = frase + sent[i] + u" "
                 frase = frase + self.TAGS[tagS]  
-                self.corpusLst.append(frase)
+                self.corpusLst.append (frase)
                 corpus=corpus+frase+self.TAGS[tagS]
-                frase = ""
-                
+            
                 continue
             else:
                 print "ATTENZIONE: parametro %s non valido" % tagW
@@ -422,9 +421,7 @@ class Tools:
         filename = self.folderTestFiles + filename + self.extCorpusData        
 
         dati = dict ()
-        print "tipo self.words", type (self.words)
-        print "tipo self.corpusLst", type(self.corpusLst)
-#        
+
 #        dati['lst'] = self.corpusLst
 #        dati['words'] = self.words
 
@@ -625,6 +622,5 @@ class CorpusObj (Tools):
 if __name__=='__main__':
     print "No Test Mode!"
     
-    a=CorpusObj (164, 'PARAG_2', 'AFTER')
-   
-           
+    a=CorpusObj (148, 'PARAG_2', 'AFTER')           
+    print a.Lst()[0]
