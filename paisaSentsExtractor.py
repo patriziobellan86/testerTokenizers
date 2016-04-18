@@ -7,8 +7,10 @@ from __future__ import unicode_literals
 
 import codecs
 import os
+from Tools import Tools
 
-class PaisaSentsExtractor ():
+
+class PaisaSentsExtractor (Tools):
     """ 
         questa classe si occupa di estrarre i dati dal file paisa e di salvarli 
         in files separati. uno per ogni frase
@@ -47,10 +49,14 @@ class PaisaSentsExtractor ():
                      
         #per i conteggi uso i float per evitare overflow
 
-        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
+        Tools.__init__ (self, 0)
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
 
         self.folderList = folderList
         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + folderdst
+        #my pc
+        self.folderdst = self.folder + os.path.sep + folderdst
+                
         self.extfile = ".conll.txt"
         self.paisa_corpus = self.folder +  paisa
         self.nwords = nwords
@@ -98,6 +104,8 @@ class PaisaSentsExtractor ():
 #				    print "folderLST", self.folderList.keys(),'\n', len(self.folderList.keys())
                                     if len(self.folderList.keys ()) > 0 and nwords >= min(self.folderList.keys ()) and self.folderList.keys() != [-1]:
                                         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + self.folderList [min(self.folderList.keys())]
+                                        #my pc
+                                        self.folderdst = self.folder + self.folderList [min(self.folderList.keys())]
                                         del self.folderList[min(self.folderList.keys())]
                                     
                                     frase = []

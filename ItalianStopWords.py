@@ -38,7 +38,7 @@ class IDF(Tools):
 #
 #        self = Tools(n = n)
     
-        Tools.__init__ (n)
+        Tools.__init__ (self, n)
 
 
 
@@ -144,9 +144,9 @@ class IDF(Tools):
 ###########################################################################
         
         
-class ItalianStopWords ():Tools
+class ItalianStopWords (Tools):
     def __init__ (self):
-        Tools.__init__ (-1)
+        Tools.__init__ (self, -1)
 
 #        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
 #
@@ -307,7 +307,7 @@ class ItalianStopWords ():Tools
 
 class ConfrontaStopwords (Tools):
     def __init__ (self, filenameStopwords = "ItalianStopwords", perc = 0.75):
-        Tools.__init__ (1)
+        Tools.__init__ (self, 1)
         
 #        
 #        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep

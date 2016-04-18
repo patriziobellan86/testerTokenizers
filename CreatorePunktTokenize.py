@@ -22,7 +22,7 @@ class MyPunktTokenize(Tools):
 
 
     def __init__(self):
-        Tools.__init__ (0)
+        Tools.__init__ (self, 0)
         
         #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
         self.folderPunkt = self.folder + u"punkt" + os.path.sep
