@@ -159,7 +159,7 @@ class Tools:
             return False
 
                   
-    def DelAllFiles(self, folder, escludeExt=False):
+    def DelAllFiles(self, folder, escludeExt = False):
         r"""
             Questo metodo elimina tutti i files in una cartella
             ESCLUSI quelli con estensione "escludeExt"
@@ -606,7 +606,10 @@ class CorpusObj (Tools):
         Tools.__init__ (self, 0)
         
         filename = str(dim) + tagS + tagW
-        filename = self.folderTestFiles + filename + self.extCorpusData     
+        filename = self.folderTestFiles + filename + self.extCorpusData 
+        #my pc
+        #filename = 'C:\\Users\\Patrizio\\Documents\\prova testi\\tokenizer\\0.3.8.3.1\\testFiles' + os.path.sep  +str(dim) + tagS + tagW+ self.extCorpusData 
+        print "caricamento corpus %s in corso..." %  filename
         self.dati = self.LoadByte (filename)
         print "corpus caricato"
         
@@ -622,5 +625,5 @@ class CorpusObj (Tools):
 if __name__=='__main__':
     print "No Test Mode!"
     
-    a=CorpusObj (148, 'PARAG_2', 'AFTER')           
+    a=CorpusObj (92327, 'TABS', 'SPACE')           
     print a.Lst()[0]
