@@ -105,7 +105,7 @@ class TestTokenizer(Tools):
         else:
             self.risultatiTest = collections.defaultdict(list)
 #new istr       SPOSTATA IN TEST     
-        self.CreaCorpusOrigin ()
+ #       self.CreaCorpusOrigin ()
         
         self.AvviaTests ()
         
