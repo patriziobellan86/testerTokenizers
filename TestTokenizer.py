@@ -104,7 +104,7 @@ class TestTokenizer(Tools):
                 self.risultatiTest = collections.defaultdict (list)
         else:
             self.risultatiTest = collections.defaultdict(list)
-#new istr            
+#new istr       SPOSTATA IN TEST     
         self.CreaCorpusOrigin ()
         
         self.AvviaTests ()
@@ -175,19 +175,20 @@ class TestTokenizer(Tools):
        
         self.TestMyPunkt ()
         self.__Save ()
+        
     ########################################################################
         
-    def CreaCorpusOrigin (self):
-        print "creazione dei corpus per i test in corso..."
-        for dim in self.dimTests:        
-            for paramS in self.TAGS.keys():
-                    for paramW in self.TAGW:
-                        self.n = dim
-                        self.CaricaCorpus ()
-                        self.CreaPlainText2 (paramS, paramW)
-                        
-                        print "Corpus %s %s %s creato correttamente" % (dim, paramS, paramW)
-                        
+# ##### spostato in  test       
+#    def CreaCorpusOrigin (self):
+#        print "creazione dei corpus per i test in corso..."
+#        for dim in self.dimTests:        
+#            for paramS in self.TAGS.keys():
+#                    for paramW in self.TAGW:
+#                        self.n = dim
+#                        self.CaricaCorpus ()
+#                        self.CreaPlainText2 (paramS, paramW)
+#                        
+#                        print "Corpus %s %s %s creato correttamente" % (dim, paramS, paramW)
                         
     def __TestTokenizer (self, testName, dimTests, tok, tipo, attributi = None, attrFilename = None): 
         def Tests ():             
@@ -203,6 +204,7 @@ class TestTokenizer(Tools):
                         self.normalParamW, self.TIPO_DIMENS, tipo, attributi, attrFilename))
                         
             self.__Save ()
+            
             return self.TestTok ()
             ############################
             
