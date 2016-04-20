@@ -6,9 +6,11 @@
 from __future__ import unicode_literals
 
 import codecs
+import os
+from Tools import Tools
 
 
-class PaisaSentsExtractor ():
+class PaisaSentsExtractor (Tools):
     """ 
         questa classe si occupa di estrarre i dati dal file paisa e di salvarli 
         in files separati. uno per ogni frase
@@ -19,26 +21,55 @@ class PaisaSentsExtractor ():
         return "0.4.1.b"
      
     def __init__(self, paisa = "paisa.annotated.CoNLL.utf8", nwords = -1,
-                 folderdst = "corpus raw\\", folderList = {-1: "corpus raw\\"}):
+                 folderdst = "corpusRaw" + os.path.sep, folderList = {-1: "corpus raw" + os.path.sep}):
+        r"""
+            direttamente durante la creazione dell'oggetto parte l'elaborazione dei dati
+            
+            :param str paisa: path al file
+            :param int nwords: numero di parole totali che si vuole estrarre
+            :param str folderdst: folder di destrinazione delle frasi estratte
+            :param dict folderList: dizionario formato da:
+                                key -> da quale numero di parole iniziare a salvare 
+                                value->la folder dove salvare
+                                
+            :return: None
+            
+            esempio:
+            
+            >>>  PaisaSentsExtractor (nwords = 15000, paisa = paisaFilename, folderdst = "a" + os.path.sep, folderList = {5000 : 'b' + os.path.sep, 10000 : 'c' + os.path.sep})
+            estrarrà:
+            15000 parole, dal file paisaFilename
+            salvandole per prima nella folder a
+            giunto a 5000 le salva nella folder b
+            giunto a 10000 le salva nella folder c
+            
+            
+            
+        """             
+                     
         #per i conteggi uso i float per evitare overflow
+
+        Tools.__init__ (self, 0)
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
+
         self.folderList = folderList
-        self.folderdst = folderdst
+        self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + folderdst
+        #my pc
+        #self.folderdst = self.folder + os.path.sep + folderdst
+                
         self.extfile = ".conll.txt"
-        self.paisa_corpus = paisa
+        self.paisa_corpus = self.folder +  paisa
         self.nwords = nwords
         self.__Elabora()
 
 
     def __Elabora(self):
-        
-      #  with codecs.open(self.paisa_corpus, mode='r', encoding='utf-8') as f:   
         period = []
         nfile = float (0) #n di files scritti
         nwords = float (0) #n parole scritte
         
         fpaisa = codecs.open(self.paisa_corpus, mode='r', encoding='utf-8')
         while True:
-#            try:
             line = fpaisa.read (1)
             if line[0] == u"<":
                 if period[0] != u'#' and period[0] != u"" and len(period) > 1:
@@ -57,6 +88,7 @@ class PaisaSentsExtractor ():
                                         nwords += 1
                                         
                                 elif frase != []:                                
+#				    print self.folderdst
                                     filename = self.folderdst + str(nfile) + self.extfile                                
                                     print "saving file: ", filename                                
                                     with codecs.open(filename, mode = 'a', encoding = 'utf-8') as out:
@@ -69,8 +101,11 @@ class PaisaSentsExtractor ():
                                         return
                                         
                                     #controllo se devo cambiare folders
-                                    if len(self.folderList.keys ()) > 0 and nwords >= min(self.folderList.keys ()):
-                                        self.folderdst = self.folderList [min(self.folderList.keys())]
+#				    print "folderLST", self.folderList.keys(),'\n', len(self.folderList.keys())
+                                    if len(self.folderList.keys ()) > 0 and nwords >= min(self.folderList.keys ()) and self.folderList.keys() != [-1]:
+                                        self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + self.folderList [min(self.folderList.keys())]
+                                        #my pc
+                                        #self.folderdst = self.folder + self.folderList [min(self.folderList.keys())]
                                         del self.folderList[min(self.folderList.keys())]
                                     
                                     frase = []
@@ -82,13 +117,16 @@ class PaisaSentsExtractor ():
             period.append (line)
 
         fpaisa.close ()
+        
+        
 if __name__=='__main__':
     print "Test Mode"
     print
     print "Estrazione di 15000 Parole in 3 cartelle differenti (a, b, c)"
-    #PaisaSentsExtractor (nwords = 15000, folderdst = "corpus raw\\")#, folderList = {10000 : 'corpus training\\'})
-    
-    PaisaSentsExtractor (nwords = 15000, folderdst = "a\\", folderList = {5000 : 'b\\', 10000 : 'c\\'})
+   
+    PaisaSentsExtractor (nwords = 15000, folderdst = "corpusRaw" + os.path.sep)   #, folderList = {10000 : 'corpus training' + os.path.sep})
+   
+    #PaisaSentsExtractor (nwords = 15000, paisa = paisaFilename, folderdst = "a" + os.path.sep, folderList = {5000 : 'b' + os.path.sep, 10000 : 'c' + os.path.sep})
     
     print 'Processo terminato correttamente'
     

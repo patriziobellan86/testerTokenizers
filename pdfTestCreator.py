@@ -18,14 +18,15 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Para
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
+import os
 
 class CreaPdf():
     def __init__ (self):
-        self.folderDati = "dati\\"
-        self.folderGrafici = self.folderDati + "grafici\\"
-        self.folderPdfs = self.folderDati + "pdfs\\"
+        self.folderDati = "dati" + os.path.sep
+        self.folderGrafici = self.folderDati + "grafici" + os.path.sep
+        self.folderPdfs = self.folderDati + "pdfs" + os.path.sep
         
-        self.filenameLogoUni = self.folderDati + "res\\" + u"unitn.jpg"        
+        self.filenameLogoUni = self.folderDati + "res" + os.path.sep + u"unitn.jpg"        
 
         self.filenameGraphDim =  u" DIMS.png"
         self.filenameGraphParams = u" PARAMS.png"
@@ -92,6 +93,7 @@ class CreaPdf():
         
         
         if len(ltestp) > 0:
+            documento.append(Spacer(1,7))
             ptext =  "parametri di costruzione corpus:"
             documento.append(Paragraph(ptext, styles["Normal"]))
             documento.append(Spacer(1,7))
@@ -99,38 +101,28 @@ class CreaPdf():
             documento.append(Paragraph(ptext, styles["Normal"]))
             documento.append(Spacer(1,7))
             for ele in ltestp:
-                if type(ltestp) == type(list()):
-                    ptext =  "%s" % ele
-                    documento.append(Paragraph(ptext, styles["Normal"]))
-                    documento.append(Spacer(1,7))
-                    
-                elif type(ltestp) == type (dict()):
-                    for e in ele.keys():
-                        ptext =  "%s" % ele[e]
-                        documento.append(Paragraph(ptext, styles["Normal"]))
-                    documento.append(Spacer(1,7))
-                    
-        if len (ltestd) > 0:
-            ptext =  "parametri dimensione corpus"
-            documento.append(Paragraph(ptext, styles["Normal"]))
-            documento.append(Spacer(1,7))
-            ptext =  "Risultati identici si ottengono anche parametrizzando il tokenizzatore con i seguenti parametri:"
-            documento.append(Paragraph(ptext, styles["Normal"]))
-            documento.append(Spacer(1,7))
+                txt = ""
+                if type (ele) == type(dict ()):
+                    for k in ele.keys():
+                        txt = txt + k + u" " + unicode(ele[k]) + u" "
+                else:
+                    raise ValueError ("Attenzione caso non ancora gestito!")
+                ptext =  "%s" % txt #ele.viewitems().__str__()
+                documento.append(Paragraph(ptext, styles["Normal"]))
+                documento.append(Spacer(1,7))
+                
+                
             for ele in ltestd:
-                if type(ltestd) == type (list()):
-                    ptext =  "%s" % ele
-                    documento.append(Paragraph(ptext, styles["Normal"]))
-                    documento.append(Spacer(1,7))
-                        
-                elif type(ltestd) == type (dict()):
-                    for e in ele.keys():
-                        ptext =  "%s" % ele[e]
-                        documento.append(Paragraph(ptext, styles["Normal"]))
-                    documento.append(Spacer(1,7))
-                    
-        ltestp, ltestd
-        
+                txt = ""
+                if type (ele) == type(dict ()):
+                    for k in ele.keys():
+                        txt = txt + k + u" " + unicode(ele[k]) + u" "
+                else:
+                    raise ValueError ("Attenzione caso non ancora gestito!")
+                ptext =  "%s" % txt# ele.viewitems().__str__()
+                documento.append(Paragraph(ptext, styles["Normal"]))
+                documento.append(Spacer(1,7))
+
         documento.append(graphParams)  
         styles=getSampleStyleSheet()
         
