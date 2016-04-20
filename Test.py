@@ -125,7 +125,8 @@ class Test (Tools):
                     #se esiste continuo altrimenti ritorno e li costruisco
                     try:
                         with open(filename, "r"):
-                            continue
+                            print "Corpus %s %s %s presente" % (dim, paramS, paramW)
+                        continue
                     except IOError:
                         self.n = dim
                         self.CaricaCorpus ()
