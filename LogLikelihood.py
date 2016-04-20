@@ -3,6 +3,11 @@
 Created on Tue Mar 08 15:57:18 2016
 
 @author: Patrizio
+
+
+            usato ereditarietà di:
+            tools
+                    
 """
 
 from __future__ import division
@@ -16,6 +21,8 @@ from math import sqrt
 import Queue
 import threading
 import multiprocessing
+import os
+
 
 class LogLikelihood ():
     r"""
@@ -25,28 +32,35 @@ class LogLikelihood ():
     """
     
     def VERSION (self):
-        return "vers.0.1.a"
+        return "vers.3.8.b"
         
         
     def __init__ (self, n = -1):
         r"""
-            il parametro n indica la quantità di frasi da utilizzare come
-            campione su cui effettuare il test
-            il parametro folder indica la cartella da cui caricare le frasi
+           
+            :param int n: la dimensione su cui effettuare il calcolo del logl.
+              
         """
-        self.folderDati = "dati\\"
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+        #self = Tools (n) #default -1, cioè tutto il campione
+        Tools.__init__ (self, n)
+        
+        #self.folderDati = self.folder + "dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle"
-        self.__tools = Tools (n) #default -1, cioè tutto il campione
+        
         self.__col_logl = list ()
         self.queue = Queue.Queue ()
         
-        self.__tools.CaricaCorpus ()
+        self.CaricaCorpus ()
 
 
 
     def __FreqFromCorpus (self):
-        bi = FreqDist(bigrams(self.__tools.words))
-        wfr = FreqDist(self.__tools.words)
+        r"""
+            Questo metodo estrae le frequenze dal corpus
+        """
+        bi = FreqDist(bigrams(self.words))
+        wfr = FreqDist(self.words)
         
         #popolo la coda        
         for eles in bi.keys():
@@ -59,6 +73,9 @@ class LogLikelihood ():
         
     
     def __CalcolaLogL (self):
+        r"""
+            Questo metodo calcola il LogLikelihood
+        """
         while True:
             a, b, ab, N = self.queue.get ()
             
@@ -69,9 +86,13 @@ class LogLikelihood ():
     
     #lancio tutti i threads
     def __MThreard (self):
+        r"""
+            Questo metodo lancia in esecuzione i threads per il calcolo
+        """
         #numero di threads
         nThread = multiprocessing.cpu_count()  
-        
+        nThread = 4 #limito il numero dei thread
+
         while not self.queue.empty ():
             #avvio tanti threads quanti sono il numero di processori logici
             #disponibili
@@ -104,7 +125,7 @@ class LogLikelihood ():
         print "logl:", logl
         
         #salvo il logl trovato
-        self.__tools.SaveByte ([logl], self.loglFilename) 
+        self.SaveByte ([logl], self.loglFilename) 
         
         return [logl]
         
@@ -116,41 +137,51 @@ class LogLikelihood ():
             1* - 1/3 del campione
         """
         ress = []
-        dimcorp = len(glob.glob (self.__tools.folderCorpus + '*.*'))
+        dimcorp = len(glob.glob (self.folderCorpus + '*.*'))
         #suddivido gli step
         for i in range(1,4):
             #calcolo il logl
             dim = int (i / 3 * dimcorp )
-            self.__tools.n = dim
-            self.__tools.CaricaCorpus ()
+            self.n = dim
+            self.CaricaCorpus ()
             ress.append (self.LogLikelihood ()[0])
         #registro i dati
-        self.__tools.DelFile (self.loglFilename)
-        self.__tools.SaveByte (ress, self.loglFilename) 
+        self.DelFile (self.loglFilename)
+        self.SaveByte (ress, self.loglFilename) 
         
         return ress
     
 ############################################################################
 
-class TestLogLikelihood ():
+class TestLogLikelihood (Tools):
     r"""
         Questa classe modella la batteria di test da effettuare
     """
     def __init__ (self, batterie = [-1], filename = "TestLogLikelihood_newTests.csv"):
         r"""
-            Il parametro batterie è una lista contenente i valori di numerosità
-            del campione su cui andare ad effettuare i tests
+            :param list batterie: lista contenente le dimensioni dei test
+            :param str filename: il nome del file su cui salvare i test
+                
+                :return: i risultati dei test
+                :rtype: tuple
         """
-        self.folderDati = "dati\\"
+         Tools.__init__ (self, 1)
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+       
+        #self = Tools(1)
+        
+        #self.folderDati = self.folder + "dati" + os.path.sep
         self.testFilename = self.folderDati + filename 
                        
-        self.tools = Tools(1)
+        
         
         self.AvviaTests (batterie)
 
     
     def AvviaTests (self, batterie):
-        
+        r"""
+            Questo metodo avvia tutti i test
+        """
         for dim in batterie:
             print "Avvio Test su %d campioni" % dim
             #Effettuo il test
@@ -161,10 +192,10 @@ class TestLogLikelihood ():
             
             print "LogLikelihood pari a %f" % result
             #salvo i log trovati    
-            self.tools.SaveTestCsv (filename = filename,testName = "Loglikelihood",
+            self.SaveTestCsv (filename = filename,testName = "Loglikelihood",
                                     nSamples = dim, result = result)
             
-            self.tools.SaveByte (result, self.loglFilename)                        
+            self.SaveByte (result, self.loglFilename)                        
         print "Tests Eseguiti correttamente"
         
  

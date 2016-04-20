@@ -9,16 +9,20 @@ from __future__ import unicode_literals
 
 from Tools import Tools
 import re
+import os
 
-class CreatorePatternRE():
+
+class CreatorePatternRE(Tools):
     def VERSION (self):
         return "vers.0.3.c"
         
         
     def __init__(self):
-        self.folderDati = u"dati\\"
-        self.fileNameRe = self.folderDati+u"RegularExpression.tag"
-        self.tools = Tools ()
+#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+#        self.folderDati = self.folder + u"dati" + os.path.sep
+#
+#        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
+        Tools.__init__(self, 0)
         
         self.patterns = None
         
@@ -27,7 +31,7 @@ class CreatorePatternRE():
         
         
     def CaricaPatterns (self):
-        self.patterns = self.tools.LoadByte (self.fileNameRe)
+        self.patterns = self.LoadByte (self.fileNameRe)
         
         
     def Print (self):
@@ -47,7 +51,7 @@ class CreatorePatternRE():
             Questo metodo registra un pattern nella variabile self.patterns
             e salva i risultati nel file
         """
-        if tipo == self.tools.WORD or tipo == self.tools.SENT:
+        if tipo == self.WORD or tipo == self.SENT:
             print "Registrazione di key:",tuple([patternName, tipo]), "value:", pattern
             self.patterns[tuple([patternName, tipo])] = pattern
             self.Save()
@@ -60,7 +64,7 @@ class CreatorePatternRE():
         r""" 
             questo metodo salva i dati sul file
         """
-        self.tools.SaveByte (dati = self.patterns, filename = self.fileNameRe)
+        self.SaveByte (dati = self.patterns, filename = self.fileNameRe)
 
 
     def InsertPattern (self):

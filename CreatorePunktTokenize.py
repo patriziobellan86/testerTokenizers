@@ -15,21 +15,24 @@ import nltk
 import os
 
 
-class MyPunktTokenize():
+class MyPunktTokenize(Tools):
     r"""questa classe modella il punkt sents tokenize """
     def VERSION(self):
         return u"vers.0.3.7.c"
 
 
     def __init__(self):
-        self.folderPunkt = u"punkt\\"
+        Tools.__init__ (self, 0)
+        
+        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
+        self.folderPunkt = self.folder + u"punkt" + os.path.sep
         self.fileExtPnkt = u".punktTok"
         self.fileExtAbbr = u".abl"
-        self.folderSents = u"corpus\\"
-        self.folderDati = u"dati\\"
+        self.folderSents = self.folder + u"corpus" + os.path.sep
+        self.folderDati = self.folder + u"dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle" 
         
-        self.tools = Tools(0)  # Strumenti vari
+        self = Tools(0)  # Strumenti vari
 
         #PARAMETRI LINGUISTICI
         self._internal_punctuation = {'default': ',:;', 'estesa': '_-@#,;:'}
@@ -37,7 +40,7 @@ class MyPunktTokenize():
         
         #files di abbreviazione
         self.abbs = (glob.glob(self.folderDati + '*' + self.fileExtAbbr))
-        a=self.abbs
+
         if not self.abbs:
             #se non sono state calcolate le abbreviazioni faccio partire i calcoli
             import Abbreviazione
@@ -48,7 +51,7 @@ class MyPunktTokenize():
         self._IGNORE_ABBREV_PENALITY = [True, False]    #DEFAULT FALSE
         self._ABBREV_BACKOFF = [1, 3, 5 ,7, 9]     #DEFAULT 5
 
-        logls = self.tools.LoadByte (self.loglFilename)
+        logls = self.LoadByte (self.loglFilename)
         if not logls:
             #se non è stato calcolato, calcolo il loglikelihood
             import LogLikelihood
@@ -150,7 +153,7 @@ class MyPunktTokenize():
         if not abbrsFilename:
             abbrs = self.Dabbs
             
-        abbrs = [ele.strip() for ele in self.tools.LoadByte(abbrsFilename)]
+        abbrs = [ele.strip() for ele in self.LoadByte(abbrsFilename)]
             
         abbrs = "\n".join (abbrs) 
         abbrs = "Start" + abbrs  + "End."
@@ -206,7 +209,7 @@ class MyPunktTokenize():
 #    def CreaFilename (self):
 #        
 #        if self.dimSamples == -1:
-#            self.dimSamples = self.tools.nSents
+#            self.dimSamples = self.nSents
 #        filename = unicode(self.dimSamples) + u" " + unicode(paramS) + u"_"+unicode(paramW)
 #        filename = filename + u" iPun_" + unicode(internalPunct)   
 #           

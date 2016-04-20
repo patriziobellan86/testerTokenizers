@@ -13,6 +13,8 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 from pdfTestCreator import CreaPdf
+import os
+
 
 class Analizzatore:
     r"""questa classe analizza tutti i dati dei tests"""
@@ -25,8 +27,8 @@ class Analizzatore:
         self.tmp=collections.defaultdict(list)
         
         
-        self.folderTest = "test files\\" #cartella files dei risultati dei tests
-        self.folderGrafici = "dati\\grafici\\"
+        self.folderTest = "testFiles" + os.path.sep #cartella files dei risultati dei tests
+        self.folderGrafici = "dati"+ os.path.sep + "grafici" + os.path.sep
         fileRisultati = self.folderTest + "results.pickle"
         #temporaneo        
         #fileRisultati = "result_tmp.pickle"
@@ -53,12 +55,11 @@ class Analizzatore:
         #divido in due liste distinte
             for ele in self.risultati[key]:
                 if ele.has_key ('attributiTok') and ele['attributiTok']:
-                #key,{u'dimTrainingWords': 4000}
-                    
-                    print (key, ele['attributiTok'].items()[0])
-                    filtro[(key, ele['attributiTok'].items()[0])].append (ele)
+                    k_2 = ele['attributiTok'].__str__()
+                    filtro[(key, k_2)].append (ele)
                 else:
                     nofiltro[key].append (ele)
+       
         #ora devo effettuare una selezione tra i test con attributo e 
         #riportare solo la parametrizzazione migliore
         
@@ -89,7 +90,7 @@ class Analizzatore:
                 nofiltro[lkey[0]].append (bestp)
             if bestd['score'] > 0:
                 nofiltro[lkey[0]].append (bestd)
-          
+        
         self.risultati = nofiltro
 
         for key in self.risultati.keys():
@@ -227,7 +228,6 @@ class Analizzatore:
         
     def ValorMedioPrestazioni (self, tipo, res):
         r"""
-        
             Questo metodo calcola le prestazioni medie inerente a tutti i tests
             suddivisi in base alla tipologia dei tests
             
@@ -244,7 +244,6 @@ class Analizzatore:
         
     def MigliorRisultato (self, tipo, res):
         r"""
-            
             Questo metodo estrae il miglior risultato dei test
         """
         best = (0, 0)
@@ -256,7 +255,6 @@ class Analizzatore:
         
     def PeggiorRisultato (self, tipo, res):
         r"""
-            
             Questo metodo estrae il miglior risultato dei test
         """
         best = (1, 1)
@@ -275,8 +273,6 @@ class Analizzatore:
         
         
     def CreaPaginaPdfTest (self, key, res):
- 
-        print "crea pagina pdf Controllare"
         CreaPdf ().CreaPdfTest (key, 
             self.ValorMedioPrestazioni (self.TIPO_PARAMS, res),
             self.ValorMedioPrestazioni (self.TIPO_DIMENS, res),  
@@ -291,62 +287,75 @@ class Analizzatore:
     def Plot(self, testName, tipo, res):
         r"""
             Questa funzione plotta i dati
-            
         """
-#        def autolabel(rects):
-#            
-#            # attach some text labels
-#            for rect in rects:
-#                height = rect.get_height()
-#                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-#                        '%d' % int(height),
-#                        ha='center', va='bottom')
-                        
-        self.xLabel =  [ele[0] for ele in res[tipo]]
-        self.yValue = [round(float(ele[1]) * 100, 2) for ele in res[tipo]]# [ele[1] for ele in res[tipo]]
-#        yValue=self.yValue
-#        yValue=[round(e*100, 3) for e in yValue]
-        N = len (self.xLabel)
-        ind = np.arange(N)  # the x locations for the groups
-        width = 0.35       # the width of the bars 
+        def autolabel(rects):
+            i=0
+            for rect in rects:
+                height = rect.get_height()
+                ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                        '%f' % yValue[i], ha='center', va='bottom') 
+                i+=1
+    
+        #dati 
+        xLabel =  [ele[0] for ele in res[tipo]]
+        yValue = [round(float(ele[1]) * 100, 2) for ele in res[tipo]]
 
-        valoriY = tuple (self.yValue)
+        N = len (xLabel)
+        ind = np.arange (N)  # coordinate x
+        width = 0.35       # dimensione bar
+        valoriY = tuple (yValue)
         
-        fig, ax = plt.subplots()
-        rects1 = ax.bar(ind, valoriY, width, color='r')
+        #creo le figure
+        fig, ax = plt.subplots ()
+        rects1 = ax.bar (ind, valoriY, width, color='r')
         
+        #asse y
         ax.set_ylabel('Scores in percentuale')
         if tipo == "PARAMS":
-            ax.set_xlabel('Tipo ricostruzione frase')
+            ax.set_xlabel('parametri ricostruzione frase')
         elif tipo == "DIMS":
-            ax.set_xlabel('Tipo ricostruzione frase')
+            ax.set_xlabel('dimensioni corpus test')
             
-        ax.set_title('test scores ' + testName)
-        ax.set_xticks(ind + width)
-        ax.set_xticklabels(tuple(self.xLabel), rotation=90)#rotation ='vertical')
+        #asse x            
+        ax.set_title ('test scores ' + testName)
+        ax.set_xticks (ind + width)
+        ax.set_xticklabels (tuple(xLabel), rotation=90)
         
-       # autolabel(rects1)
+        #etichette dati
+        autolabel(rects1)
   
+        #titolo del grafico
         plt.title(testName)
-  
+        
+        #calcolo la media
         try:
-            mean = sum(self.yValue) / len(self.yValue)
+            mean = sum(yValue) / len(yValue)
         except ZeroDivisionError:
             mean = 0
-            
-            
-        x_points = xrange(0,len(self.xLabel))
-        y_points = np.array([mean]*len(self.yValue))
-        p = ax.plot(x_points, y_points, 'g')
+
+
+        #plotto la media
+        x = np.linspace(0,len(xLabel),50,endpoint=True)
+        y1= [mean]*50
+        plt.plot(x,y1, color='yellow', label='mean globale',linewidth=1.0, linestyle="--")
+         
+        #imposto i limiti degli assi
+        ax.set_xlim(0, len (xLabel))
+        ax.set_ylim(0, 100)
+       
+        #aggiungo la leggenda
+        ax.legend(loc='upper left', fontsize=11)
         
-        plt.tight_layout(pad=1)
-#        plt.show()
+        #sistemo la figura
+        plt.tight_layout(pad=2)
         
-        
+        #salvo la figura
         filename = self.folderGrafici + testName + u" " + tipo + u".png"
         plt.savefig(filename, dpi=150, transparent=False)        
         
+        #chiudo il plot
         plt.close ()
+        
         
 if __name__ == '__main__':
     a= Analizzatore ()
