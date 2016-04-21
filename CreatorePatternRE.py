@@ -22,8 +22,8 @@ class CreatorePatternRE(Tools):
 #        self.folderDati = self.folder + u"dati" + os.path.sep
 #
 #        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
-        Tools.__init__(self, 0)
-        
+        #Tools.__init__(self, 0)
+        super (CreatorePatternRE, self).__init__(0)
         self.patterns = None
         
         self.CaricaPatterns ()

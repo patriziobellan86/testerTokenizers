@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 @author: Patrizio
 """
@@ -45,32 +45,48 @@ class PaisaSentsExtractor (Tools):
             
             
             
-        """             
-                     
-        #per i conteggi uso i float per evitare overflow
-
-        Tools.__init__ (self, 0)
-        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
-
+        """               
+        #inizializzo la classe ereditata
+        super (PaisaSentsExtractor, self).__init__ (0)
+        
+        #cartella in rete
+        
+        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
+        #my pc
+        #self.folder = ""
+        
+        #dizionari con lista cartelle
         self.folderList = folderList
+        
+        #cartella di destinazione
         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + folderdst
         #my pc
         #self.folderdst = self.folder + os.path.sep + folderdst
                 
+        #estensione dei files estratti
         self.extfile = ".conll.txt"
+        
+        #file di paisa
         self.paisa_corpus = self.folder +  paisa
+        
+        #numero di parole da estrarre
         self.nwords = nwords
+        
+        #inizio elaborazione
         self.__Elabora()
 
 
     def __Elabora(self):
-        period = []
+        period = []   #periodo
         nfile = float (0) #n di files scritti
         nwords = float (0) #n parole scritte
         
+        #apro il puntatore al file
         fpaisa = codecs.open(self.paisa_corpus, mode='r', encoding='utf-8')
         while True:
+            #leggo una riga
             line = fpaisa.read (1)
+            #controllo che la riga sia di testo
             if line[0] == u"<":
                 if period[0] != u'#' and period[0] != u"" and len(period) > 1:
                     frase = []
@@ -87,13 +103,15 @@ class PaisaSentsExtractor (Tools):
                                         frase.append (s)        
                                         nwords += 1
                                         
-                                elif frase != []:                                
-#				    print self.folderdst
+                                elif frase != []:   
+                                    #costruisco il nome del file 
                                     filename = self.folderdst + str(nfile) + self.extfile                                
-                                    print "saving file: ", filename                                
+                                    print "saving file: ", filename, "nword %d / %d" % (nwords, self.nwords)   
+                                    
+                                    #salvo il file con la frase appena estratta
                                     with codecs.open(filename, mode = 'a', encoding = 'utf-8') as out:
                                         out.writelines (frase)
-    
+                                    #incremento il contatore del numero di file
                                     nfile += 1
     
                                     #controllo se ho salvato il numero di parole desiderate
@@ -101,7 +119,6 @@ class PaisaSentsExtractor (Tools):
                                         return
                                         
                                     #controllo se devo cambiare folders
-#				    print "folderLST", self.folderList.keys(),'\n', len(self.folderList.keys())
                                     if len(self.folderList.keys ()) > 0 and nwords >= min(self.folderList.keys ()) and self.folderList.keys() != [-1]:
                                         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + self.folderList [min(self.folderList.keys())]
                                         #my pc

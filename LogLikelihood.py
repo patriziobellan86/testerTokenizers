@@ -43,8 +43,9 @@ class LogLikelihood ():
         """
         #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
         #self = Tools (n) #default -1, cioè tutto il campione
-        Tools.__init__ (self, n)
-        
+#        Tools.__init__ (self, n)
+        super (LogLikelihood, self).__init__ (n)
+
         #self.folderDati = self.folder + "dati" + os.path.sep
         self.loglFilename = self.folderDati + "loglikelihood.pickle"
         
@@ -90,8 +91,9 @@ class LogLikelihood ():
             Questo metodo lancia in esecuzione i threads per il calcolo
         """
         #numero di threads
-        nThread = multiprocessing.cpu_count()  
-        nThread = 4 #limito il numero dei thread
+        nThread = multiprocessing.cpu_count()    #numero di thread pari al numero di processori logici
+        
+        nThread = 2 #limito il numero dei thread
 
         while not self.queue.empty ():
             #avvio tanti threads quanti sono il numero di processori logici
@@ -109,6 +111,10 @@ class LogLikelihood ():
             essendo k > 30 / 50 la distribuzione Gamma si approssima alla normale
             quindi sfrutto le proprietà della normale e stabilisco che una
             collocations è tale se rappresenta almeno circa il 30% del campione
+              
+            
+            :return: i valori di logll.
+            :rtype: list
         """
         self.__FreqFromCorpus ()
         self.__MThreard ()
@@ -135,6 +141,9 @@ class LogLikelihood ():
             3* - tutto il campione
             2* - 2/3 del campione
             1* - 1/3 del campione
+            
+            :return: i valori di logll.
+            :rtype: list
         """
         ress = []
         dimcorp = len(glob.glob (self.folderCorpus + '*.*'))
@@ -162,25 +171,24 @@ class TestLogLikelihood (Tools):
             :param list batterie: lista contenente le dimensioni dei test
             :param str filename: il nome del file su cui salvare i test
                 
-                :return: i risultati dei test
-                :rtype: tuple
+            :return: i risultati dei test
+            :rtype: tuple
         """
-         Tools.__init__ (self, 1)
+     
+        #inizializzazione ereditarietà
+        super (TestLogLikelihood, self).__init__ (1)
         #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
        
-        #self = Tools(1)
-        
         #self.folderDati = self.folder + "dati" + os.path.sep
         self.testFilename = self.folderDati + filename 
-                       
-        
-        
+         
         self.AvviaTests (batterie)
 
     
     def AvviaTests (self, batterie):
         r"""
             Questo metodo avvia tutti i test
+            
         """
         for dim in batterie:
             print "Avvio Test su %d campioni" % dim
