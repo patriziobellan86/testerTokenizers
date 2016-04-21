@@ -13,7 +13,7 @@ import pickle
 import random
 import collections
 
-class Tools:
+class Tools (object):
     #costanti di classe
     WORD = 1
     SENT = 2
@@ -23,50 +23,44 @@ class Tools:
         
         
     def __init__(self, n = -1, fileRisultati = "File Risultati"):
+        #parametri di classe
+    
         #per word tok
         self.SPACE='SPACE'
         self.AFTER='AFTER'
         self.BEFORE='BEFORE'
-#aggiunto PARAG        
+       
         self.TAGS = {'NONE' : u"", 'NEW LINE' : u"\n", 'TABS' : u"\t",
                      'PARAG' : u"\n\t", 'PARAG_2' : u'\n\n\t\t', 'SPACE' : u" "}
-
+                     
         self.TAGW = [self.SPACE, self.AFTER, self.BEFORE]
 
 #share clic
         self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
 #my pc
         #self.folder = "C:\\Users\\Patrizio\\Documents\\prova testi\\tokenizer\\0.3.8.3.1\\"
-        
-        
-        
+                
         self.folderCorpus = self.folder + "corpus" + os.path.sep
         
-        
         self.folderDati = self.folder + "dati" + os.path.sep
-        
         self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
-
         self.folderPunkt = self.folder + u"punkt" + os.path.sep
         self.fileExtPnkt = u".punktTok"
         self.folderDati = self.folder + u"dati" + os.path.sep        
-        
         self.folderCorpusTraining = self.folder + "corpusTraining" + os.path.sep
         
-        self.fileRisultati = self.folderTestFiles + "results.pickle"
-        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
-        self.stopwordsFilename = self.folderDati + u"Italian Stopwords.stopWords"
-        self.fileExtPnkt = u".punktTok"
-        self.fileExtAbbr = '.abl'
-        self.fileExtStopW = u".stopWords"
+        self.fileRisultati = self.folderTestFiles + "results.pickle"  #file dei risultati
+        self.fileNameRe = self.folderDati + u"RegularExpression.tag"   #espressioni regolari 
+        self.stopwordsFilename = self.folderDati + u"Italian Stopwords.stopWords"  #file stopwords
+        self.fileExtPnkt = u".punktTok" #estensione file punkt
+        self.fileExtAbbr = '.abl'   #estensione file abbreviazioni
+        self.fileExtStopW = u".stopWords"  #estensione file stopwords
         self.morphItFileName = self.folderDati + "morphit.utf8.txt"
-        
-        
-        self.extCorpusData = '.datacorpus'
-        
-        
+                
+        self.extCorpusData = '.datacorpus'  #estensione file di corpus
         
         #riepilogo variabili di classe
+        
         #nSamples
         self.n = n
         #type
@@ -148,6 +142,11 @@ class Tools:
             
             
     def LoadByte(self,filename):
+        r"""
+            Questa funzione carica un pickle
+            
+            :param str filename: path file   
+        """
         try:
             in_s=open(filename,'rb')
             dati=pickle.load(in_s)
@@ -164,7 +163,8 @@ class Tools:
             Questo metodo elimina tutti i files in una cartella
             ESCLUSI quelli con estensione "escludeExt"
             
-            
+            :param str folder: folder con i files da eliminare
+            :param list escludeExt: estensione file da escludere
         """
         files=glob.glob(folder+u"*")
         for file in files:
@@ -181,8 +181,8 @@ class Tools:
     def DelFile(self, file):
         r"""
             Questo metodo elimina un singolo file
-            
-            
+           
+           :param str filename: path file 
         """
         try:
             os.remove(file)
@@ -193,18 +193,26 @@ class Tools:
     def SaveTimeCsv(self, filename, testName, nSamples, execTime):
         r"""
             Questo Metodo salva i risultati del test di comparazione tempo nel file csv 
+            NON USATA
+            :param str filename: path file 
+            :param str testName: nome test 
+            :param str nSamples: path file 
+            :param str execTime: path file 
         """
         
         with open(filename, 'ab') as csvfile:
             writer=csv.writer(csvfile)
             writer.writerow( (testName, nSamples, execTime) )
             
-######   NEW   MODIFICATA            
+           
     def SaveResCsv(self, testName, nIn, nOut, score):
         r"""
             Questo Metodo salva i risultati del test nel file csv 
             
-            
+            :param str testName: nome test 
+            :param str nIn: n dati in ingresso 
+            :param str nOut: n dati in uscita  
+            :param str score: score test 
         """
         
         with open(self.fileCsvRisultati, 'ab') as csvfile:
@@ -215,6 +223,11 @@ class Tools:
     def SaveTestCsv(self, filename, testName, nSamples, result):
         r"""
             Questo Metodo salva i risultati del test in un file csv 
+            
+            :param str filename: path file
+            :param str testName: nome test 
+            :param str nSamples: n dati in ingresso  
+            :param str result: score test 
         """
         
         with open(filename, 'ab') as csvfile:
@@ -226,6 +239,7 @@ class Tools:
         r"""
             Questa funzione carica i dati dal file csv
             
+            :param str filenameCsv: path file
         """
         
         with open(filenameCsv, 'rb') as csvfile:
@@ -236,16 +250,18 @@ class Tools:
         r""" 
             Questo metodo si occupa di caricare un corpus utilizzato per i tests
             
-            
+            :param bool randomCorpus: attiva il random corpus
+            :param str folder: cartella da cui prelevare i files
         """
-#NEW        
+     
         if folder:
             self.folderCorpus = self.folder + folder + os.path.sep
-        
-#####MIGLIORATA FUNZIONE ###################        
+       
+#        print "folder corpus:", self.folderCorpus
+#        print "len glob corpus:", len(glob.glob (self.folderCorpus+'*'))      
 
         lst_pos=['ignore','words','ne','ignore','pos','srl','chunk','tree','ignore','ignore']
-        #self.corpus=nltk.corpus.ConllCorpusReader(root=self.folderCorpus, fileids='.*',columntypes=lst_pos)
+        
         if self.n == 0:
             return
         #se dim == -1 utilizzo tutti i samples
@@ -253,12 +269,12 @@ class Tools:
             fileids = glob.glob (self.folderCorpus + '*.*')
             #fileids=self.corpus.fileids()
             if randomCorpus:
-##random corpus        
+                #########   random corpus    #############    
                 fileidsRandom = list ()
                 for i in xrange(self.n):
                     fileidsRandom.append(fileids[random.randint(0, self.n-1)])   #aggiungo -1 per evitare di uscire dal len della lista
                 fileids = fileidsRandom
-##############             
+                ############################################             
             else:
                 #controllo di non eccedere con lo slicing della list
                 if self.n < len (fileids):
@@ -266,10 +282,10 @@ class Tools:
                     
             fileids = [os.path.basename(w) for w in fileids]  
             self.corpus = nltk.corpus.ConllCorpusReader(root = self.folderCorpus,
-                                            fileids = fileids, columntypes = lst_pos)     
+                                        fileids = fileids, columntypes = lst_pos)     
         else:
-            self.corpus=nltk.corpus.ConllCorpusReader(root=self.folderCorpus, fileids='.*',columntypes=lst_pos)
-            
+            self.corpus=nltk.corpus.ConllCorpusReader(root=self.folderCorpus, 
+                                        fileids = '.*', columntypes = lst_pos)
             
         self.sents= self.corpus.sents()
         self.words = self.corpus.words()
@@ -277,8 +293,13 @@ class Tools:
         self.nSents=len(self.sents)
         self.nWord=len(self.words)        
         
+#        #ricerca bug
+#        print "N sent caricati", self.nSents
+#        print "ids", len(fileids)
+#        print "corS", len(self.corpus.sents())
+#        print "n", self.n
 
-#VERIFICARE UTILIT° FUNZIONE    
+#VERIFICARE UTILITA' FUNZIONE    
     def CreaPlainTextFromRandomCorpus (self): #(self, tagW='SPACE', tagS='NONE'):
         r""" 
             Questo metodo si occupa di caricare un corpus utilizzato per i tests
@@ -286,70 +307,9 @@ class Tools:
             
         """
         self.CaricaCorpus (randomCorpus = True)
-#        return self.CreaPlainText (tagS = tagS, tagW = tagW)      
-        
- #old function       
-    def CreaPlainText___ (self, tagS='NONE', tagW='SPACE'):
-        r"""
-            Questo metodo si occupa di creare il corpus da utilizzare per i tests
-
-            # option 'SPACE'|'BEFORE'|'AFTER'
-            #SPACE uno spazio tra ogni parola
-            #BEFORE niente spazio tra parola e segno dopo
-            #AFTER niente spazio tra parola e segno, ma tra segno e parola
-                   es. "wordPunct word"
-        """
-        
-        #li registro per poterli utilizzare dopo
-
-        self.tagW = tagW
-        self.tagS = tagS
-        self.corpusLst = list()
-        
-        corpus=u""
-        for sent in self.sents:
-            if tagW == self.SPACE:
-                frase = u" ".join(sent) + self.TAGS[tagS]
-                corpus = corpus + frase
-                self.corpusLst.append(frase)
-            ############################ ok
-            elif tagW == self.AFTER:
-                frase = u""
-                for i in xrange(len(sent)):     
-                    if (i+1) < len (sent):
-                        if not sent[i+1].isalpha() and len(sent[i+1]) == 1:
-                             frase = frase + sent[i]
-                        else:
-                             frase = frase + sent[i] + u" "
-                    else:
-                         frase = frase + sent[i] + u" "
-                frase = frase + self.TAGS[tagS]
-                self.corpusLst.append(frase)    
-                corpus=corpus+frase
-            ####################### ok
-            elif tagW == self.BEFORE:
-                frase = u""
-                for i in xrange(len(sent)):     
-                    if (i+1) < len (sent):
-                        if not sent[i].isalpha() and len(sent[i]) == 1:
-                             frase = frase + sent[i]
-                        else:
-                             frase = frase + sent[i] + u" "
-                    else:
-                         frase = frase + sent[i] + u" "
-                frase = frase + self.TAGS[tagS]  
-                self.corpusLst.append(frase)
-                corpus=corpus+frase+self.TAGS[tagS]
-            else:
-                print "ATTENZIONE: parametro %s non valido" % tagW
-                
-        self.corpusTxt = corpus
-
-        return self.corpusTxt                    
-
-
-#new method    
-    def CreaPlainText2 (self, tagS='NONE', tagW='SPACE'):
+                 
+    #new method    
+    def CreaPlainText2 (self, tagS='NONE', tagW='SPACE', dim = -1):
         r"""
         Agire su questo e lasciare intatto quello precedente
         
@@ -362,16 +322,30 @@ class Tools:
             #AFTER niente spazio tra parola e segno, ma tra segno e parola
                    es. "wordPunct word"
 
+            :param str tagS: tipo di separatore di frasi
+            :param str tagW: tipo di separatore delle parole
+            :param str dim: dimensione corpus da creare
         """
         
-        #li registro per poterli utilizzare dopo
-
+        #carico il corpus
+        self.n = dim
+        self.CaricaCorpus ()
+        #aggiorno i dati interni
         self.tagW = tagW
         self.tagS = tagS
+        
         self.corpusLst = list()
         
         corpus=u""
+        
+        #dati per contatore frasi        
+        nsents = len (self.sents)
+        i = 0   #contatore frasi
+        
         for sent in self.sents:
+            print "elaborazione frase %d / %d"% (i, nsents)
+            i += 1
+            
             if tagW == self.SPACE:
                 frase = u" ".join (sent) + self.TAGS[tagS]
                 corpus = corpus + frase
@@ -415,41 +389,44 @@ class Tools:
                 break
         self.corpusTxt = corpus
 
-#memorizzo i dati in un defaultdict (list) e salvo il pickle
+        #memorizzo i dati in un dict (list) e salvo il pickle
         dim = len(self.sents)
         filename = str(dim) + tagS + tagW
         filename = self.folderTestFiles + filename + self.extCorpusData        
 
         dati = dict ()
 
-#        dati['lst'] = self.corpusLst
-#        dati['words'] = self.words
-
         dati['lst'] = self.corpusLst
         dati['words'] = list(self.words)
-#        
-#        print "#"*55
-#        
-#        print list(self.words)
-#        
-#        print "#"*55
-        
+
         self.SaveByte(dati, filename)
-################
         
         return self.corpusTxt         
-      
       
       
     #RISULTATI DEI TEST 
     def RisultatiTest(self, testName, datiTest, tipo, words, sents, tag= u""):
         r"""
             Questa funzione crea una stringa di testo con il riepilogo dei dati del test
+            
+            :param str testName: nome test
+            :param var datiTest: dati del test
+            :param int tipo: tipo di test
+            :param list words: lista parole
+            :param list sents: lista frasi
+            :param str tag: tag parametro di separazione frasi
+            
+            :return: la stringa dei risultati e il valore dello score del test
+            :rtype: str
+            :rtype: float
+            
         """
         
+        #ripulisco i dati
         sents = [s.strip() for s in sents]
         datiTest = [s.strip() for s in list(datiTest)]
         
+        #calcolo lo score in base al tipo di test effettuato
         if tipo == self.WORD:
             nInput = len(words)
             #sistemare quando sono in presenta di parole!!!
@@ -459,6 +436,7 @@ class Tools:
             nInput = len(sents)
             score = self.ScoreTest (fOriginale = sents, fTest = datiTest, tag = self.TAGS[tag])
    
+       #stringa per stampa a video dei risultati
         s = u"\n" + u"-" * 55 + u"\n"
         s = s + u"Test Name               : {}\n".format(testName)
         s = s + u"numero di dati in input : {}\n".format(nInput)
@@ -467,12 +445,6 @@ class Tools:
         s = s + u"error                   : {} %".format((float(1) -float(score)) * 100)
         s = s + u"\n" + u"-" * 55
 
-#        self.SaveResCsv(testName = testName, nIn = nInput, nOut = nTest, score = score)
-#        if tipo == self.WORD:
-#            self.SaveResCsv(testName = testName, nIn = nInput, nOut =  len(datiTest), score = score)
-#        elif tipo == self.SENT:
-#            self.SaveResCsv(testName = testName, nIn = nInput, nOut =  len(datiTest), score = score)
-            
         return s , score
         
         
@@ -497,14 +469,19 @@ class Tools:
         indOrig = 0  #indice a File Originale
         indTest = 0  #indice a file di Test
 
+        
         while i < len (fOriginale):
+            #controllo di non uscire dalle dimensioni delle liste
             if indOrig >= len(fOriginale):
                 break
             elif indTest >= len(fTest):
                 break
 
+            #azzero gli indici di spostamento
             jo = 0
             jt = 0 
+            
+            #effettuo il confronto
             if fOriginale[indOrig] == fTest[indTest]:
                 score.append(NO_ERROR)
             elif fOriginale[indOrig].startswith(fTest[indTest]):                  
@@ -603,7 +580,8 @@ class CorpusObj (Tools):
                 
         
         """        
-        Tools.__init__ (self, 0)
+        #Tools.__init__ (self, 0)
+        super (CorpusObj, self).__init__ (0)
         
         filename = str(dim) + tagS + tagW
         filename = self.folderTestFiles + filename + self.extCorpusData 
@@ -614,16 +592,34 @@ class CorpusObj (Tools):
         print "corpus caricato"
         
     def Txt (self):
+        r"""
+            Txt -> restituisce il testo in forma piana
+            
+            :return: il testo
+            :rtype: str
+        """
         return "".join (self.dati['lst'])
         
     def Lst (self):
+        r"""
+            Lst -> restituisce il testo in lista
+            
+            :return: il testo
+            :rtype: list
+        """
         return self.dati['lst']
         
     def Words (self):
+        r"""
+            Words -> restituisce le parole
+            
+            :return: le parole
+            :rtype: list
+        """
         return self.dati['words']
         
 if __name__=='__main__':
     print "No Test Mode!"
     
-    a=CorpusObj (92327, 'TABS', 'SPACE')           
+    a=CorpusObj (54, 'TABS', 'SPACE')           
     print a.Lst()[0]
