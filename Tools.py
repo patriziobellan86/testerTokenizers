@@ -13,7 +13,7 @@ import pickle
 import random
 import collections
 
-class Tools:
+class Tools (object):
     #costanti di classe
     WORD = 1
     SENT = 2
@@ -241,7 +241,8 @@ class Tools:
 #NEW        
         if folder:
             self.folderCorpus = self.folder + folder + os.path.sep
-        
+        print "folder corpus:", self.folderCorpus
+        print "len glob corpus:", len(glob.glob (self.folderCorpus+'*'))
 #####MIGLIORATA FUNZIONE ###################        
 
         lst_pos=['ignore','words','ne','ignore','pos','srl','chunk','tree','ignore','ignore']
@@ -276,7 +277,11 @@ class Tools:
         
         self.nSents=len(self.sents)
         self.nWord=len(self.words)        
-        
+#ricerca bug
+#        print "N sent caricati", self.nSents
+#        print "ids", len(fileids)
+#        print "corS", len(self.corpus.sents())
+#        print "n", self.n
 
 #VERIFICARE UTILIT° FUNZIONE    
     def CreaPlainTextFromRandomCorpus (self): #(self, tagW='SPACE', tagS='NONE'):
@@ -288,68 +293,68 @@ class Tools:
         self.CaricaCorpus (randomCorpus = True)
 #        return self.CreaPlainText (tagS = tagS, tagW = tagW)      
         
- #old function       
-    def CreaPlainText___ (self, tagS='NONE', tagW='SPACE'):
-        r"""
-            Questo metodo si occupa di creare il corpus da utilizzare per i tests
-
-            # option 'SPACE'|'BEFORE'|'AFTER'
-            #SPACE uno spazio tra ogni parola
-            #BEFORE niente spazio tra parola e segno dopo
-            #AFTER niente spazio tra parola e segno, ma tra segno e parola
-                   es. "wordPunct word"
-        """
-        
-        #li registro per poterli utilizzare dopo
-
-        self.tagW = tagW
-        self.tagS = tagS
-        self.corpusLst = list()
-        
-        corpus=u""
-        for sent in self.sents:
-            if tagW == self.SPACE:
-                frase = u" ".join(sent) + self.TAGS[tagS]
-                corpus = corpus + frase
-                self.corpusLst.append(frase)
-            ############################ ok
-            elif tagW == self.AFTER:
-                frase = u""
-                for i in xrange(len(sent)):     
-                    if (i+1) < len (sent):
-                        if not sent[i+1].isalpha() and len(sent[i+1]) == 1:
-                             frase = frase + sent[i]
-                        else:
-                             frase = frase + sent[i] + u" "
-                    else:
-                         frase = frase + sent[i] + u" "
-                frase = frase + self.TAGS[tagS]
-                self.corpusLst.append(frase)    
-                corpus=corpus+frase
-            ####################### ok
-            elif tagW == self.BEFORE:
-                frase = u""
-                for i in xrange(len(sent)):     
-                    if (i+1) < len (sent):
-                        if not sent[i].isalpha() and len(sent[i]) == 1:
-                             frase = frase + sent[i]
-                        else:
-                             frase = frase + sent[i] + u" "
-                    else:
-                         frase = frase + sent[i] + u" "
-                frase = frase + self.TAGS[tagS]  
-                self.corpusLst.append(frase)
-                corpus=corpus+frase+self.TAGS[tagS]
-            else:
-                print "ATTENZIONE: parametro %s non valido" % tagW
-                
-        self.corpusTxt = corpus
-
-        return self.corpusTxt                    
+# #old function       
+#    def CreaPlainText___ (self, tagS='NONE', tagW='SPACE'):
+#        r"""
+#            Questo metodo si occupa di creare il corpus da utilizzare per i tests
+#
+#            # option 'SPACE'|'BEFORE'|'AFTER'
+#            #SPACE uno spazio tra ogni parola
+#            #BEFORE niente spazio tra parola e segno dopo
+#            #AFTER niente spazio tra parola e segno, ma tra segno e parola
+#                   es. "wordPunct word"
+#        """
+#        
+#        #li registro per poterli utilizzare dopo
+#
+#        self.tagW = tagW
+#        self.tagS = tagS
+#        self.corpusLst = list()
+#        
+#        corpus=u""
+#        for sent in self.sents:
+#            if tagW == self.SPACE:
+#                frase = u" ".join(sent) + self.TAGS[tagS]
+#                corpus = corpus + frase
+#                self.corpusLst.append(frase)
+#            ############################ ok
+#            elif tagW == self.AFTER:
+#                frase = u""
+#                for i in xrange(len(sent)):     
+#                    if (i+1) < len (sent):
+#                        if not sent[i+1].isalpha() and len(sent[i+1]) == 1:
+#                             frase = frase + sent[i]
+#                        else:
+#                             frase = frase + sent[i] + u" "
+#                    else:
+#                         frase = frase + sent[i] + u" "
+#                frase = frase + self.TAGS[tagS]
+#                self.corpusLst.append(frase)    
+#                corpus=corpus+frase
+#            ####################### ok
+#            elif tagW == self.BEFORE:
+#                frase = u""
+#                for i in xrange(len(sent)):     
+#                    if (i+1) < len (sent):
+#                        if not sent[i].isalpha() and len(sent[i]) == 1:
+#                             frase = frase + sent[i]
+#                        else:
+#                             frase = frase + sent[i] + u" "
+#                    else:
+#                         frase = frase + sent[i] + u" "
+#                frase = frase + self.TAGS[tagS]  
+#                self.corpusLst.append(frase)
+#                corpus=corpus+frase+self.TAGS[tagS]
+#            else:
+#                print "ATTENZIONE: parametro %s non valido" % tagW
+#                
+#        self.corpusTxt = corpus
+#
+#        return self.corpusTxt                    
 
 
 #new method    
-    def CreaPlainText2 (self, tagS='NONE', tagW='SPACE'):
+    def CreaPlainText2 (self, tagS='NONE', tagW='SPACE', dim = -1):
         r"""
         Agire su questo e lasciare intatto quello precedente
         
@@ -365,12 +370,17 @@ class Tools:
         """
         
         #li registro per poterli utilizzare dopo
-
+        self.n = dim
+        
+        self.CaricaCorpus ()
+        
+        
         self.tagW = tagW
         self.tagS = tagS
         self.corpusLst = list()
         
         corpus=u""
+#ricerca bug, questa è l'istruzione in errore        
         for sent in self.sents:
             if tagW == self.SPACE:
                 frase = u" ".join (sent) + self.TAGS[tagS]
@@ -415,7 +425,7 @@ class Tools:
                 break
         self.corpusTxt = corpus
 
-#memorizzo i dati in un defaultdict (list) e salvo il pickle
+#memorizzo i dati in un dict (list) e salvo il pickle
         dim = len(self.sents)
         filename = str(dim) + tagS + tagW
         filename = self.folderTestFiles + filename + self.extCorpusData        
@@ -625,5 +635,5 @@ class CorpusObj (Tools):
 if __name__=='__main__':
     print "No Test Mode!"
     
-    a=CorpusObj (92327, 'TABS', 'SPACE')           
+    a=CorpusObj (54, 'TABS', 'SPACE')           
     print a.Lst()[0]

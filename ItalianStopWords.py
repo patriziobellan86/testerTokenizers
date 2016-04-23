@@ -31,17 +31,9 @@ def IsAlpha (string):
 class IDF(Tools):
     
     def __init__(self, n = -1):
-#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-#
-#        self.folderCorpus = self.folder + "corpus" + os.path.sep
-#        
-#
-#        self = Tools(n = n)
-    
-        Tools.__init__ (self, n)
-
-
-
+        #dichiarazione ereditarietà
+        super (IDF, self).__init__(n)
+        #var di classe
         self.D = 0
         self.KD = collections.defaultdict (int)
         self.idfs = dict ()
@@ -146,16 +138,8 @@ class IDF(Tools):
         
 class ItalianStopWords (Tools):
     def __init__ (self):
-        Tools.__init__ (self, -1)
-
-#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-#
-#        self.folderDati = self.folder + u"dati" + os.path.sep
-#        self.fileExtStopW = u".stopWords"
-#        self.morphItFileName = self.folderDati + "morphit.utf8.txt"
-#        
-#        self = Tools (-1)    #carico tutto il corpus
-#        
+        #Tools.__init__ (self, -1)
+        super (ItalianStopWords, self).__init__(-1)
 #OK    
     def __StopWordsFrequenza (self):
         r"""
@@ -293,7 +277,7 @@ class ItalianStopWords (Tools):
         self.__StopWordsFrequenza ()
         self.__StopWordsIDF ()
         
-        ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
+        ConfrontaStopwords ("ItalianEsteso_Nltk", 0.55)
             
             
     def __SaveStopWords (self, filename, stopwords):
@@ -306,20 +290,14 @@ class ItalianStopWords (Tools):
 ###########################################################################
 
 class ConfrontaStopwords (Tools):
-    def __init__ (self, filenameStopwords = "ItalianStopwords", perc = 0.75):
-        Tools.__init__ (self, 1)
+    def __init__ (self, filenameStopwords = "ItalianStopwords", perc = 0.55):
         
-#        
-#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-
-        self.fileNameStopwords = self.folder + filenameStopwords
+        super (ConfrontaStopwords, self).__init__(1)
+        #my pc
+        #self.folderDati = '/home/patrizio/testerTokenizers/dati/'
+        self.fileNameStopwords = self.folderDati + filenameStopwords + self.fileExtStopW
         self.perc = perc
-        
-#        
-#        self.folderDati = self.folder + u"dati" + os.path.sep
-#        self.fileExtStopW = u".stopWords"
-#        self = Tools (1) # uso solo gli strimenti di tools
-#        
+       
         stp = self.Confronta (self.LoadStopwords (), escludiNltk = True)
         self.PrintStp (stp)
         self.SalvaFileStopwords(stp)
@@ -335,7 +313,7 @@ class ConfrontaStopwords (Tools):
         stopwords = dict ()
         
         for file in glob.glob (self.folderDati + '*' + self.fileExtStopW):
-            print file
+            print "file:", file
             k = os.path.basename(file)[:-len (self.fileExtStopW)]
             stopws = self.LoadByte (file)
        
@@ -383,9 +361,8 @@ class ConfrontaStopwords (Tools):
             
             
     def SalvaFileStopwords (self, dati):
-        filename = self.folderDati + self.fileNameStopwords + self.fileExtStopW
-        self.DelFile (filename)
-        self.SaveByte (filename = filename, dati = dati)
+        self.DelFile (self.fileNameStopwords)
+        self.SaveByte (filename = self.fileNameStopwords, dati = dati)
         
         
 ###########################################################################
@@ -483,5 +460,8 @@ def Confronto2 ():
     
     
 if __name__=='__main__':
-    AvviaCalcoli ()
-    ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
+#    AvviaCalcoli ()
+#    ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
+
+    #ItalianStopWords ().StopWords ()
+    ConfrontaStopwords()

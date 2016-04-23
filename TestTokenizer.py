@@ -67,7 +67,8 @@ class TestTokenizer(Tools):
 #inizializzazione classe ereditata qui!
         
         #self=Tools(n = 0, fileRisultati = (pathFileRisultati))        
-        Tools.__init__ (self, n = 0, fileRisultati = (fileRisultati))
+        #Tools.__init__ (self, n = 0, fileRisultati = (fileRisultati))
+        super (TestTokenizer, self).__init__(n = 0, fileRisultati = (fileRisultati))
 #        
 #
 #        self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
@@ -914,7 +915,7 @@ class TestTokenizer(Tools):
         precScore = 0
         attScore = self.sogliaMiglioramento
         dim = self.passoTraining
-        dimsent = DimSamplesPunkt().NumSents (dim)
+        dimsent = abs(DimSamplesPunkt().NumSents (dim))
         nsentprec = 0 #questa var mi serve per controllare di non eccedere oltre le dimensioini del corpus di training
         
         print "inizio euristica miglioramento default punkt"
@@ -941,7 +942,7 @@ class TestTokenizer(Tools):
             nsentprec = dimsent         
             #precScore = attScore
             dim = dim + self.passoTraining
-            dimsent = DimSamplesPunkt().NumSents (dim)                            
+            dimsent = abs(DimSamplesPunkt().NumSents (dim))
         print "fine stima dimensione di training"
         print "inizio test su default punkt tok"
         #Effettuo e registro il test con i parametri standard
@@ -1008,7 +1009,7 @@ class TestTokenizer(Tools):
         precScore = 0
         attScore = self.sogliaMiglioramento
         dim = self.passoTraining
-        dimsent = DimSamplesPunkt().NumSents (dim)
+        dimsent = abs(DimSamplesPunkt().NumSents (dim))
         nsentprec = 0 #questa var mi serve per controllare di non eccedere oltre le dimensioini del corpus di training
         print "inizio stima dim training my punkt"
         while self.EuristicaMiglioramento (precScore, attScore):
@@ -1031,7 +1032,7 @@ class TestTokenizer(Tools):
             
             nsentprec = dimsent  
             dim = dim + self.passoTraining
-            dimsent = DimSamplesPunkt().NumSents (dim)                            
+            dimsent = abs(DimSamplesPunkt().NumSents (dim))
 
         print "fine stima dimensione di training"
         print "inizio test my punkt"

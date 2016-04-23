@@ -34,10 +34,10 @@ class Test (Tools):
             dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
             
         """
-        #self.folder = '//mnt//8tera//shareclic//lucaNgrams//Patrizio//'
+     
 #eredita qui
-        #self = Tools (0)
-        Tools.__init__ (self, 0)
+        #Tools.__init__ (self, 0)
+        super (Test, self).__init__(1)
         
         self.nc = max(dimCorpus)
         self.nt = nt        
@@ -49,12 +49,13 @@ class Test (Tools):
         self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
 
         print "Dim corpus:", dimCorpus
+        print "dim nc", self.nc
         
-        self.dimCorpus = [DimSamplesPunkt().NumSents (dim) for dim in dimCorpus]
-        
-        if len(glob.glob (self.folderCorpus + '*')) == 0 or max (self.dimCorpus) == 0 \
-                        or max (dimCorpus) != len(glob.glob (self.folderCorpus + '*')):
-
+        #controllo se il numero massimo di parole da usare come corpus è già stato estratto
+        if DimSamplesPunkt().NumSents (self.nc) < 0:
+#            print "TMP EXIT"
+#            raise ValueError
+            
             import paisaSentsExtractor
 
             print "eliminazione corpus precedente..."
@@ -64,10 +65,16 @@ class Test (Tools):
 
             print "caricamento nuovo corpus"
             #carico il nuovo corpus
-            paisaSentsExtractor.PaisaSentsExtractor (nwords = (self.nc + self.nt), folderdst = "corpus" + os.path.sep, folderList = {self.nc : "corpusTraining" + os.path.sep})
-                       
-        # dimTrainingMyPunktTok è espresso in numero di parole, viene trasformato in numero di sents da usare
-        #self.dimMyPunktTok = [DimSamplesPunkt().nSents (dim) for dim in dimTrainingMyPunktTok]
+            
+            #per evitare errori sovrastimo i valori di nc e nt del 10%
+            ntot= (self.nc + self.nt)*1.1
+            paisaSentsExtractor.PaisaSentsExtractor (nwords =ntot, folderdst = "corpus" + os.path.sep, folderList = {(self.nc*1.1) : "corpusTraining" + os.path.sep})
+        #converto il corpus da num di parole a num di frasi
+        self.dimCorpus = [DimSamplesPunkt().NumSents (dim) for dim in dimCorpus]
+        
+        print max (dimCorpus)
+        print len(glob.glob (self.folderCorpus + '*'))
+        print self.dimCorpus
 
         self.AvviaTests ()
 
@@ -78,46 +85,17 @@ class Test (Tools):
     
         #controllo se i corpus sono già stati costruiti o sono da costruire
         self.CorpusDaCreare ()
-#        if self.CorpusDaCreare ():   
-#            import paisaSentsExtractor
-#
-#            print "eliminazione corpus precedente"    
-#            #per prima cosa cancello i corpus precedenti
-#            print "caricamento nuovo corpus"
-#            #carico il nuovo corpus
-#            paisaSentsExtractor.PaisaSentsExtractor (nwords = (self.nc + self.nt), folderdst = "corpus" + os.path.sep, folderList = {self.nc : "corpusTraining" + os.path.sep})
-#                       
-#            #creazione dei corpus
-#            self.CreaCorpusOrigin ()    
             
         #avvio tutti i test con i parametri impostati
         TestTokenizer(fileRisultati = "Risultati", save = True, dimTests = self.dimCorpus, aggiornaDatiTest = False)
         
-        #decido di separare i processi di test e di analisi
-        #Analizzatore ()
-
-    
-#    def CreaCorpusOrigin (self):
-#        #elimino i corpus precedenti
-#        self.DelAllFiles (self.folderTestFiles)
-#        #creo quelli nuovi
-#        print "creazione dei corpus per i test in corso..."
-#        for dim in self.dimTests:        
-#            for paramS in self.TAGS.keys():
-#                    for paramW in self.TAGW:
-#                        self.n = dim
-#                        self.CaricaCorpus ()
-#                        self.CreaPlainText2 (paramS, paramW)
-#                        
-#                        print "Corpus %s %s %s creato correttamente" % (dim, paramS, paramW)
-#                   
-                   
+     
     def CorpusDaCreare (self):
         r"""
             Questo metodo crea i corpus da utilizzare per i test       
         """
         
-        for dim in self.dimTests:        
+        for dim in self.dimCorpus:        
             for paramS in self.TAGS.keys():
                 for paramW in self.TAGW:  
                     filename = str(dim) + paramS + paramW
@@ -128,9 +106,10 @@ class Test (Tools):
                             print "Corpus %s %s %s presente" % (dim, paramS, paramW)
                         continue
                     except IOError:
-                        self.n = dim
-                        self.CaricaCorpus ()
-                        self.CreaPlainText2 (paramS, paramW)
+                        #self.n = dim
+                        #self.CaricaCorpus ()
+                        print "Creazione Corpus %s %s %s in corso..." % (dim, paramS, paramW)
+                        self.CreaPlainText2 (paramS, paramW, dim)
                         print "Corpus %s %s %s creato correttamente" % (dim, paramS, paramW)
 
     
@@ -153,64 +132,18 @@ class Test (Tools):
         
 ###########################################################################    
 
-#def AvvioConEstrazioneDaPaisa ():
-#    import paisaSentsExtractor
-#
-#    print "eliminazione corpus precedente"    
-#    #per prima cosa cancello i corpus precedenti
-#    a=Tools(0)
-#    folder = '//mnt//8tera//shareclic//lucaNgrams//Patrizio//'    
-#    a.DelAllFiles (folder + "corpus" + os.path.sep)
-#    a.DelAllFiles (folder + "corpusTraining" + os.path.sep)
-#    
-#    print "caricamento nuovo corpus"
-#    #carico il nuovo corpus
-#    nc = 5000000
-#    nt = 2500000
-#    #my pc
-##    nc = 50000
-##    nt = 25000
-##    
-#    paisaSentsExtractor.PaisaSentsExtractor (nwords = (nc + nt), folderdst = "corpus" + os.path.sep, folderList = {nc : "corpusTraining" + os.path.sep})
-#   
-#    print "Avvio programma di TEST"
-#    #avvio i tests  
-#    #effettuo i test con dimensione nc, nc/2 e nc/4 che sono pari a:
-#    # nc = 2000000
-#    # nc/2 = 1000000
-#    # nc/4 = 500000
-#    Test (dimCorpus = [int(nc / 2), int(nc / 4), nc], nt)
-#    
-#    
-#def AvvioSenzaEstrazioneDaPaisa ():
-#    #carico il nuovo corpus
-#    nc = 50000
-#    
-#    print "Avvio programma di TEST"
-#    #avvio i tests  
-#    #effettuo i test con dimensione nc, nc/2 e nc/4 che sono pari a:
-#    # nc = 2000000
-#    # nc/2 = 1000000
-#    # nc/4 = 500000
-#    Test (dimCorpus = [nc / 2, nc / 4, nc])
-#
-#
-#def TestMode ():
-#    print "test Mode"
-#    print
-#    print "dimensione dei test espressa in numero di parole. il numero differirà leggermente poichè approssimato alla fine della frase"
-#    
-#    dimCorpus = [1000, 2000]
-#    
-#    Test (dimCorpus)
                 
 if __name__ == '__main__':
-    #AvvioConEstrazioneDaPaisa ()
-    #AvvioSenzaEstrazioneDaPaisa ()
-  
+ 
     #imposto le dimensioni e avvio i test
+    print "Temporaneo pretest"
     nc = 5000000
     nt = 2500000     
+    
+#    print "Temporaneo pretest"
+#    nc = 5000
+#    nt = 2500         
+    
     print "Avvio programma di test dei tokenizers"
     print 
     print "Numero parole nel corpus di test: %f" % nc

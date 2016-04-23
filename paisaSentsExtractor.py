@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 @author: Patrizio
 """
@@ -49,9 +49,12 @@ class PaisaSentsExtractor (Tools):
                      
         #per i conteggi uso i float per evitare overflow
 
-        Tools.__init__ (self, 0)
-        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
-
+#        Tools.__init__ (self, 0)
+        super (PaisaSentsExtractor, self).__init__ (0)
+        
+        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
+        #my pc
+        #self.folder = ""
         self.folderList = folderList
         self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + folderdst
         #my pc
@@ -90,7 +93,8 @@ class PaisaSentsExtractor (Tools):
                                 elif frase != []:                                
 #				    print self.folderdst
                                     filename = self.folderdst + str(nfile) + self.extfile                                
-                                    print "saving file: ", filename                                
+                                    print "saving file: ", filename, "nword %d / %d" % (nwords, self.nwords)   
+                                    
                                     with codecs.open(filename, mode = 'a', encoding = 'utf-8') as out:
                                         out.writelines (frase)
     
