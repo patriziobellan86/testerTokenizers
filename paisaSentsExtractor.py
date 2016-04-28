@@ -15,12 +15,12 @@ class PaisaSentsExtractor (Tools):
         questa classe si occupa di estrarre i dati dal file paisa e di salvarli 
         in files separati. uno per ogni frase
     """
-    def __author__(self):
-        return "Patrizio Bellan \n patrizio.bellan@gmail.com"
-    def __version__(self):
-        return "0.4.1.b"
+ 
+    def VERSION (self):
+        return "1.0.a-Lite"
      
-    def __init__(self, paisa = "paisa.annotated.CoNLL.utf8", nwords = -1,
+     
+    def __init__(self, nwords = -1,
                  folderdst = "corpusRaw" + os.path.sep, folderList = {-1: "corpus raw" + os.path.sep}):
         r"""
             direttamente durante la creazione dell'oggetto parte l'elaborazione dei dati
@@ -42,27 +42,20 @@ class PaisaSentsExtractor (Tools):
             salvandole per prima nella folder a
             giunto a 5000 le salva nella folder b
             giunto a 10000 le salva nella folder c
-            
-            
-            
         """             
-                     
-        #per i conteggi uso i float per evitare overflow
-
-#        Tools.__init__ (self, 0)
+   
         super (PaisaSentsExtractor, self).__init__ (0)
-        
-        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep
-        #my pc
-        #self.folder = ""
+
         self.folderList = folderList
-        self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + folderdst
-        #my pc
-        #self.folderdst = self.folder + os.path.sep + folderdst
-                
+
+        self.folderdst = folderdst
+  
         self.extfile = ".conll.txt"
-        self.paisa_corpus = self.folder +  paisa
+      
+        self.paisa_corpus = self.CaricaParametro(parametro = 'paisa')
+        
         self.nwords = nwords
+
         self.__Elabora()
 
 
@@ -91,7 +84,6 @@ class PaisaSentsExtractor (Tools):
                                         nwords += 1
                                         
                                 elif frase != []:                                
-#				    print self.folderdst
                                     filename = self.folderdst + str(nfile) + self.extfile                                
                                     print "saving file: ", filename, "nword %d / %d" % (nwords, self.nwords)   
                                     
@@ -105,11 +97,8 @@ class PaisaSentsExtractor (Tools):
                                         return
                                         
                                     #controllo se devo cambiare folders
-#				    print "folderLST", self.folderList.keys(),'\n', len(self.folderList.keys())
                                     if len(self.folderList.keys ()) > 0 and nwords >= min(self.folderList.keys ()) and self.folderList.keys() != [-1]:
-                                        self.folderdst = self.folder + 'testerTokenizers' + os.path.sep + self.folderList [min(self.folderList.keys())]
-                                        #my pc
-                                        #self.folderdst = self.folder + self.folderList [min(self.folderList.keys())]
+                                        self.folderdst = self.folderList [min(self.folderList.keys())]
                                         del self.folderList[min(self.folderList.keys())]
                                     
                                     frase = []
@@ -125,12 +114,13 @@ class PaisaSentsExtractor (Tools):
         
 if __name__=='__main__':
     print "Test Mode"
-    print
-    print "Estrazione di 15000 Parole in 3 cartelle differenti (a, b, c)"
-   
-    PaisaSentsExtractor (nwords = 15000, folderdst = "corpusRaw" + os.path.sep)   #, folderList = {10000 : 'corpus training' + os.path.sep})
-   
-    #PaisaSentsExtractor (nwords = 15000, paisa = paisaFilename, folderdst = "a" + os.path.sep, folderList = {5000 : 'b' + os.path.sep, 10000 : 'c' + os.path.sep})
-    
-    print 'Processo terminato correttamente'
+    print "test mode non funzionante"
+#    
+#    print "Estrazione di 15000 Parole in 3 cartelle differenti (a, b, c)"
+#   
+#    PaisaSentsExtractor (nwords = 15000, folderdst = "corpusRaw" + os.path.sep)   #, folderList = {10000 : 'corpus training' + os.path.sep})
+#   
+#    #PaisaSentsExtractor (nwords = 15000, paisa = paisaFilename, folderdst = "a" + os.path.sep, folderList = {5000 : 'b' + os.path.sep, 10000 : 'c' + os.path.sep})
+#    
+#    print 'Processo terminato correttamente'
     

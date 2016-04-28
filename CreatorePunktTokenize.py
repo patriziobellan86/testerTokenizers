@@ -18,22 +18,20 @@ import os
 class MyPunktTokenize(Tools):
     r"""questa classe modella il punkt sents tokenize """
     def VERSION(self):
-        return u"vers.0.3.7.c"
+        return u"1.0.1-Lite"
 
 
     def __init__(self):
         #Tools.__init__ (self, 0)
         super (MyPunktTokenize, self).__init__(0)
         #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-        self.folderPunkt = self.folder + u"punkt" + os.path.sep
+        
         self.fileExtPnkt = u".punktTok"
         self.fileExtAbbr = u".abl"
-        self.folderSents = self.folder + u"corpus" + os.path.sep
-        self.folderDati = self.folder + u"dati" + os.path.sep
+        
         self.loglFilename = self.folderDati + "loglikelihood.pickle" 
         
-        self = Tools(0)  # Strumenti vari
-
+        
         #PARAMETRI LINGUISTICI
         self._internal_punctuation = {'default': ',:;', 'estesa': '_-@#,;:'}
         self._end_sent_punct = {'default': ('.', '?', '!'), 'estesa':('.', '?', '!','}',']')}
@@ -204,52 +202,9 @@ class MyPunktTokenize(Tools):
         
     ########################################################################
 
-    
-######### SISTEMARE BENE BENE BENE                                                            
-#    def CreaFilename (self):
-#        
-#        if self.dimSamples == -1:
-#            self.dimSamples = self.nSents
-#        filename = unicode(self.dimSamples) + u" " + unicode(paramS) + u"_"+unicode(paramW)
-#        filename = filename + u" iPun_" + unicode(internalPunct)   
-#           
-#        filename = filename + u" ePun_" + unicode(endSentPunct)
-#        
-#        filename = filename + u" abr_" + unicode(str(pktAbbrev))       
-#        if pktIgnoreAbbrevPenality:
-#            filename = filename+u" IgAbPn_T"
-#        else:
-#            filename = filename + u" IgAbPn_F"         
-#        filename = filename + u" AbbBck_" + unicode(pktAbbrevBackoff)                           
-#        filename = filename + u" Col_" + unicode(pktCollocation)            
-#        filename = filename + u" sSt_" + unicode(pktSentStarter)          
-#        if pktIncAllCollocs:
-#            filename = filename + u" ACl_T"
-#        else:
-#            filename = filename + u" ACl_F"
-#        if pktIncAbbrevCollocs:
-#            filename = filename + u" Ab_T"
-#        else:
-#            filename = filename + u" Ab_F"
-#        filename = filename + u" mFr_" + unicode(pktMinCollFreq)
-#        #abbrev filename
-#        filenameAbr = os.path.basename(abbreviaz)[:os.path.basename(abbreviaz).rindex(os.path.extsep)]
-#        filename = filename + u" aF_" + unicode(filenameAbr)
-#        
-#        return filename
-                                                            
-  
                                                       
 if __name__=='__main__':
     print "non utilizzabile - richiamare all'interno di una funzione parametrizzandolo"
-    a=MyPunktTokenize()
-    
-######### TEMPORANEO ###############       
-    def functA (a, b, c, d, e):
-        print a
-        print b
-        return (a+b+c+d+e)
-    l=[2,3,4,5]
-    functA(1, *l)
+   
     
     

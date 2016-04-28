@@ -24,6 +24,7 @@ class CreatorePatternRE(Tools):
 #        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
         #Tools.__init__(self, 0)
         super (CreatorePatternRE, self).__init__(0)
+        
         self.patterns = None
         
         self.CaricaPatterns ()
@@ -106,34 +107,9 @@ class CreatorePatternRE(Tools):
         self.Print()
         
         
-    def TestRe(self):
-        r"""
-            Metodo di test per la creazione della classe
-        """
-        print "TEST RE"
-        stringa ="Questa è una stringa di prova"
-        r1 = r'\w+'        
-        patt = re.compile (r1)
-        s1= patt.findall(stringa)
-        r2 = u"\w+"
-        patt =  re.compile (r2)
-        
-        s2= patt.findall(stringa)
-        print "pattern s1:", r1
-        print "pattern s2:", r2
-        print "s1 == s2:", s1==s2
-        print "type(r1):", type(r1)
-        print "type(r2):", type(r2)
-        print "type(r1) == type(r2) :", type (r1) == type(r2)
-        print "s1:", s1
-        print "s2:", s2
-        
-        print "FINE TEST"
-        
 if __name__ == '__main__':
     a=CreatorePatternRE()
-#    a.TestRe()
     a.InsertPattern ()
-#    a.DelPattern()
+
     
       
