@@ -463,5 +463,5 @@ if __name__=='__main__':
 #    AvviaCalcoli ()
 #    ConfrontaStopwords ("ItalianEsteso_Nltk", 0.65)
 
-    #ItalianStopWords ().StopWords ()
+    ItalianStopWords ().StopWords ()
     ConfrontaStopwords()

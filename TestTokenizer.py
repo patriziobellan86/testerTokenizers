@@ -14,19 +14,13 @@
 
 from __future__ import division, unicode_literals
 
-from Tools import Tools, CorpusObj
+from Tools import Tools
 from TestTextTiling import TextTiling
 from CreatorePunktTokenize import MyPunktTokenize
-from DimSamplesPunkt import DimSamplesPunkt
-
-import Queue
-import threading
-import multiprocessing
 
 import nltk
 import re
-import os
-
+import glob
 import collections
 
 
@@ -41,53 +35,18 @@ class TestTokenizer(Tools):
     def __init__(self, fileRisultati = "Risultati", save = False, 
             dimTests = [0], aggiornaDatiTest = False):
         
-
+        super (TestTokenizer, self).__init__(n = 0, fileRisultati = (fileRisultati))
         
-        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-
         self.dimTests = dimTests   #list numerosità test espressa in numero di frasi
 
-        self.sogliaMiglioramento = 0.05
-        self.passoTraining = 50000
-        #tmp        
-#        self.passoTraining = 1000
-
+        self.sogliaMiglioramento = float (self.CaricaParametro(parametro = 'sogliaMiglioramento'))
+        self.passoTraining = int (self.CaricaParametro(parametro = 'passoTraining'))
+        
         self.save = save
                   
         self.TIPO_PARAMS = 'PARAMS'
         self.TIPO_DIMENS = 'DIMS'
         
-
-
-        #pathFileRisultati = self.folderTestFiles + fileRisultati
-        
-        #fileRisultati = self.folderTestFiles + fileRisultati
-
-      
-#inizializzazione classe ereditata qui!
-        
-        #self=Tools(n = 0, fileRisultati = (pathFileRisultati))        
-        #Tools.__init__ (self, n = 0, fileRisultati = (fileRisultati))
-        super (TestTokenizer, self).__init__(n = 0, fileRisultati = (fileRisultati))
-#        
-#
-#        self.folderTestFiles = self.folder + u"testFiles" + os.path.sep
-#
-#        self.folderPunkt = self.folder + u"punkt" + os.path.sep
-#        self.fileExtPnkt = u".punktTok"
-#        self.folderDati = self.folder + u"dati" + os.path.sep        
-#        
-#        self.folderCorpusTraining = self.folder + "corpusTraining" + os.path.sep
-#        
-#        self.fileRisultati = self.folderTestFiles + "results.pickle"
-#        self.fileNameRe = self.folderDati + u"RegularExpression.tag"
-#        self.stopwordsFilename = self.folderDati + u"Italian Stopwords.stopWords"
-#        self.fileExtPnkt = u".punktTok"
-        
-#        
-#        self.paramCorpusCreationW = self.TAGW
-#        self.paramCorpusCreationS = self.TAGS.keys()
-#        
         #Condizione Semplice
         self.simpleParamS = 'PARAG_2'
         self.simpleParamW = 'SPACE'
@@ -100,14 +59,13 @@ class TestTokenizer(Tools):
         self.patterns = self.LoadByte (self.fileNameRe)
 
         if aggiornaDatiTest:
-            self.risultatiTest = self.LoadByte (self.fileRisultati)
+            self.risultatiTest = self.LoadByte (self.fileRisultatiPickle)
             if not self.risultatiTest:
                 self.risultatiTest = collections.defaultdict (list)
         else:
             self.risultatiTest = collections.defaultdict(list)
-#new istr       SPOSTATA IN TEST     
-#        self.CreaCorpusOrigin ()
-        
+        print "File risultati %s" % (self.fileRisultatiPickle)
+        self.__Save ()
         self.AvviaTests ()
         
 
@@ -115,7 +73,7 @@ class TestTokenizer(Tools):
         
     def AvviaTests (self):
         r"""
-            Questo metodo si occupa di mandare in eseguzione tutti i tests
+            Questo metodo si occupa di mandare in esecuzione tutti i tests
         """
         
         s = u"\n Avvio dei Tests"
@@ -127,13 +85,17 @@ class TestTokenizer(Tools):
         self.PrintOut (s)
         self.AvviaTestSentsTokenizers ()
         self.__Save ()
+        
+        print 
         print "FINE TEST"
         
+    ########################################################################
         
     def __Save (self):
         
         #Salvo il file dei risultati
-        self.SaveByte (self.risultatiTest, self.fileRisultati)
+        return self.SaveByte (dati = self.risultatiTest, filename = self.fileRisultatiPickle)
+        
     ########################################################################
         
     #TESTS SUI WORDS TOKENIZERS
@@ -141,7 +103,7 @@ class TestTokenizer(Tools):
         r"""
             Questo metodo testa tutti i tokenizzatori di parole        
         """     
-        #nltk.tokenize.simple
+
         self.TestSimpleSpaceTokenizerWord ()
         
         self.TestSimpleWordTokenizer ()
@@ -179,161 +141,106 @@ class TestTokenizer(Tools):
         
     ########################################################################
         
-# ##### spostato in  test       
-#    def CreaCorpusOrigin (self):
-#        print "creazione dei corpus per i test in corso..."
-#        for dim in self.dimTests:        
-#            for paramS in self.TAGS.keys():
-#                    for paramW in self.TAGW:
-#                        self.n = dim
-#                        self.CaricaCorpus ()
-#                        self.CreaPlainText2 (paramS, paramW)
-#                        
-#                        print "Corpus %s %s %s creato correttamente" % (dim, paramS, paramW)
-                        
-    def __TestTokenizer (self, testName, dimTests, tok, tipo, attributi = None, attrFilename = None): 
-        def Tests ():             
-            self.queue =  Queue.Queue ()
-            #popolo la coda di test
-            dim = dimTests[0]
-            for paramS in self.TAGS.keys():
-                for paramW in self.TAGW:            
-                    self.queue.put((testName, tok, dim, paramS, paramW, 
-                        self.TIPO_PARAMS, tipo, attributi, attrFilename))
-            for dim in dimTests:
-                self.queue.put((testName, tok, dim, self.normalParamS, 
-                        self.normalParamW, self.TIPO_DIMENS, tipo, attributi, attrFilename))
-                        
-            self.__Save ()
+    def __TestTokenizer2 (self, testName, tok, tipo, attributi = None, attrFilename = None): 
+        r"""
+            Nuova Versione
             
-            return self.TestTok ()
-            ############################
+            non uso il multithread perchè ho notato che mi dà problemi sul server
             
-        return Tests ()
+        """
+        #ciclo di test
+      
+        for paramS in self.TAGS.keys():
+            for paramW in self.TAGW:   
+                score, test = self.__Test2 (testName, tok, self.dimTests[0], paramS, paramW, self.TIPO_PARAMS, tipo, attributi, attrFilename)   
+                s=self.__Save ()                
+                print "risultati salvati: ", s
+                if not s:
+                    print "Errore salvataggio file %s" % self.fileRisultatiPickle
+                if score == False:
+                    return False
         
-   
-    def TestTok (self):
-        class MyThread  (threading.Thread):
-            def __init__ (self, testFunction, numberTh, dati, r):
-                threading.Thread.__init__(self)                
-                self.name = numberTh
-                self.__test = testFunction
-                self.dati = dati
-                self.r = r
-                
-            def run (self):
-                
-                try:
-                    print "Inizio thread", self.name
-                    self.r.append(self.__test (*self.dati))
-                    print "Fine thread", self.name
-                    
-                except:
-                    print "break thread", self.name
-                    #global r
-                    self.r.append (False)
-                    return
-        i=0
-        r = []
-        while not self.queue.empty ():
-          
-            lt = []
-            #utilizzo tanti thread quanti sono i processori logici dell'elaboratore
-            for  i in xrange (1): #dato che il server mi killa il processo decido di mandarne in eseguzione solo 1 alla volta 4): # limito i thread a 4 #multiprocessing.cpu_count()):
-            #for  i in xrange (self.queue.qsize ()):
-          
-                try:
-                    if self.queue.empty ():
-                        #se non ci sono più dati da elaborare esco dal ciclo di elaborazione
-                        break
-                    t = MyThread (self.__Test, i, self.queue.get (), r)
-                    #thl.release ()
-                    t.daemon = True
-                    t.start ()
-                    #t.join ()
-                    i+=1
-                    lt.append (t)
-                except:
-                    pass
-            #aspetto finchè ci sono thread vivi
-            while sum([l.isAlive() for l in lt]):
-                pass
-            #r = [r.r for r in t]
-            r.sort()
-            #dopo sort i False sono messi per primi
-            if not r[0]:
+        for dim in self.dimTests:
+            score, test = self.__Test2(testName, tok, dim, self.normalParamS, self.normalParamW, self.TIPO_DIMENS, tipo, attributi, attrFilename)
+            s=self.__Save ()                
+            print "risultati salvati: ", s
+            if not s:
+                print "Errore salvataggio file %s" % self.fileRisultatiPickle
+            if score == False:
                 return False
-    
-        return True
- #       return r
+        
+         #mettere un return!!!!!!!!!
 
-###########################################        
- 
-    def __Test (self, testName, tok, dim, paramS, paramW, tipoTest, tipo, attributi, attrFilename, registra = True):
-        try:
-            s = u"\nTEST : {}".format (testName) 
+    def __Test2 (self, testName, tok, dim, paramS, paramW, tipoTest, tipo, attributi, attrFilename, registra = True):
+     
+        scores = []
+       
+        if tipo == self.SENT:
+            tag = paramS
+        else:
+            tag = u""
+            
+        s = u"\nTEST : {}".format (testName) 
+        s = s + "\nTest %s sù %d campioni, in condizioni paramS: %s paramW: %s" % (testName, dim, paramS, paramW)
+        print s
+
+        #suddivido il carico di elaborazione in sottotest
+        ws = int (self.CaricaParametro (parametro = "finestraCorpusIn"))
+        
+        #dimenisone max frasi
+        filesCorpus = glob.glob (self.folderCorpus + '*')
+        filesCorpus = filesCorpus [:dim]       #seleziono solo la parte di dimensione dim
+        
+        dimFilesCorpus = len (filesCorpus)    #lo calcolo una volta per tutte
+        
+        totTest = int(dimFilesCorpus/ ws)
+        print "totTest: ", totTest
+        
+        for i in xrange (totTest):
+            
+            print "esecuzione test %s %d / %d - params %s %s %s %s" % (testName, i, totTest, dim, paramS, paramW, tipoTest)
+            #carico la finestra di corpus
+            files = filesCorpus[i * ws: i * ws + ws]
+            
+            #creo il corpus
+            corpus = self.CorpusObj(files, paramS, paramW)
+
+            try:
+                #effettuo il test
+                datiOut = tok.tokenize (corpus['txt'])#.Txt ())
+            except:
+                print "il testo non è elaborabile dal tokenizzatore %s" % testName
+                return (False, False)
+                
+            r, score = self.RisultatiTest(testName, datiOut, tipo, corpus['words'], corpus['lst'], tag) #.Words(), corpus.Lst (), tag)
+            
+            #self.PrintOut (r)
+            
+            #registro i dati del test e passo al successivo
+            scores.append (score)
+            
+        #calcolo la media dei risultati
+        score = sum (scores) / len (scores)
+              
+        print "Score medio test: ", score
+        
+        if self.EuristicaNoZero (score): 
+            self.PrintOut ("Euristica NoZero superata")     
+        else:
+            self.PrintOut ("Euristica NoZero Non superata")
+            
+        test = {'paramS':paramS, 'paramW':paramW, 'dim':len(corpus['words']), 
+                'score':score, 'euristicaNoZero': self.EuristicaNoZero (score), 
+                'tipoTest': tipoTest, 'fileTest': 'NONE - LITE VERSION', 'attributiTok': attributi}
+        
+        if registra:       
+            self.risultatiTest[testName].append(test)
+            s = self.__Save ()
+            print "file risultati %s salvato: " % self.fileRisultatiPickle
             print s
-            s = s + "\nTest su %d in condizioni paramS: %s paramW: %s" % (dim, paramS, paramW)
-            #self.PrintOut (s)
-#Modifica Qui!
-
-            corpus = CorpusObj(dim, paramS, paramW)
-            datiOut = tok.tokenize (corpus.Txt())
-            
-#old            
-#            #Oggetto per il corpus
-#            corpusObj = Tools (dim)
-#            corpusObj.CaricaCorpus ()
-#   
-#            datiOut = tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))
-########
-            
-            if tipo == self.SENT:
-                tag = paramS
-            else:
-                tag = u""
-                
-                
-#new new NEW
-            r, score = self.RisultatiTest(testName, datiOut, tipo, corpus.Words(), corpus.Lst (), tag)
-###old                
-#            r, score = self.RisultatiTest(testName, datiOut, tipo, corpusObj.words, corpusObj.corpusLst, tag)
-######
-
-
-            self.PrintOut (s + r)   
-            #Salvo il file elaborato dal tokenizzatore
-            fileTest = None
-            if self.save and registra:
-                if not attrFilename:
-                    attrFilename = u""
-
-#new                     
-                filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(len(corpus.Words())) + u" " + u".txt"
-#old
-#                filename = self.folderTestFiles + testName + u" " + attrFilename + u" " + paramS + u" " + paramW + u" " +  unicode(len(corpusObj.words)) + u" " + u".txt"                
-#####
-                fileTest = filename
-                
-                self.SaveFile (filename = filename, dati = datiOut) 
-                
-                
-            if self.EuristicaNoZero (score): 
-                self.PrintOut ("Euristica NoZero superata")     
-            else:
-                self.PrintOut ("Euristica NoZero Non superata")
-                
-            test = {'paramS':paramS, 'paramW':paramW, 'dim':len(corpus.Words()), 
-                    'score':score, 'euristicaNoZero': self.EuristicaNoZero (score), 
-                    'tipoTest': tipoTest, 'fileTest': fileTest, 'attributiTok': attributi}
-            if registra:       
-                self.risultatiTest[testName].append(test)
-            
-            return (score, test)
-        except:
-            print "il testo non è elaborabile dal tokenizzatore %s"% testName
-            return False
-            
+            if not s:
+                print "Errore salvataggio file %s" % self.fileRisultatiPickle
+        return (score, test)
 
     ########################################################################
     #SIMPLE SPACE TOKENIZER
@@ -342,14 +249,14 @@ class TestTokenizer(Tools):
         r""" 
             questo metodo effettua il test sullo simple space word tokenize
         """
+
         testName = u"SIMPLE SPACE WORD TOKENIZER"
-        dimTests = self.dimTests
+        
         tok = nltk.tokenize.simple.SpaceTokenizer()
         tipo = self.WORD
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
-                          
 
-        
+        self.__TestTokenizer2 (testName, tok, tipo)
+          
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
 
     ########################################################################
@@ -364,10 +271,10 @@ class TestTokenizer(Tools):
                 return nltk.tokenize.word_tokenize (sents)
                 
         testName = u"STANDARD WORD TOKENIZER"
-        dimTests = self.dimTests
         tok = Tok ()
         tipo = self.WORD
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
         
  
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
@@ -385,10 +292,10 @@ class TestTokenizer(Tools):
                 return nltk.tokenize.word_tokenize (sents, language='italian')
                 
         testName = u"STANDARD WORD TOKENIZER ITA"
-        dimTests = self.dimTests
         tok = Tok ()
         tipo = self.WORD
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
         
 
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
@@ -402,10 +309,10 @@ class TestTokenizer(Tools):
             questo metodo effettua il test sul treebank tokenizer
         """
         testName = u"STANDARD WORD TOKENIZER ITA"
-        dimTests = self.dimTests
         tok = nltk.tokenize.TreebankWordTokenizer()
         tipo = self.WORD
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
         
                   
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
@@ -421,10 +328,10 @@ class TestTokenizer(Tools):
             questo metodo effettua il test sullo simple line tokenize
         """
         testName = u"SIMPLE LINE SENT TOKENIZER"
-        dimTests = self.dimTests
         tok = nltk.tokenize.simple.LineTokenizer()
         tipo = self.SENT
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
         
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
     ########################################################################
@@ -438,10 +345,10 @@ class TestTokenizer(Tools):
             questo metodo effettua il test sullo simple tab tokenize
         """
         testName = u"SIMPLE TAB SENT TOKENIZER"
-        dimTests = self.dimTests
         tok = nltk.tokenize.simple.TabTokenizer()
         tipo = self.SENT
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
        
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
     ########################################################################
@@ -458,10 +365,10 @@ class TestTokenizer(Tools):
                 return nltk.tokenize.sent_tokenize (sents)
          
         testName =  u"SIMPLE SENT TOKENIZER"
-        dimTests = self.dimTests
         tok = Tok ()
         tipo = self.SENT
-        self.__TestTokenizer (testName, dimTests, tok, tipo)
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
     
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
     ########################################################################
@@ -477,10 +384,10 @@ class TestTokenizer(Tools):
                 return nltk.tokenize.sent_tokenize (sents, language='italian')
          
         testName = u"SIMPLE SENT TOKENIZER ITA"
-        dimTests = self.dimTests
         tok = Tok ()
         tipo = self.SENT
-        self.__TestTokenizer (testName, dimTests, tok, tipo) 
+        
+        self.__TestTokenizer2 (testName, tok, tipo)
         
         
     ########## FINE TESTS SU QUESTO TOKENIZER ##############################
@@ -548,12 +455,12 @@ class TestTokenizer(Tools):
         """
 
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=True, discard_empty=True, flags=re.UNICODE)
         tipo = tipo
         attributiTok = {'gap': True, 'discardEmpty': True, 'flags': 're.UNI'}
         attrfn = u"gap=True discardEmpty=True flags=re.UNI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
                         
     #################################################################################   
         
@@ -568,13 +475,13 @@ class TestTokenizer(Tools):
         """
 
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=True, discard_empty=True, flags=re.MULTILINE)
         tipo = tipo
         attributiTok ={'gap': True, 'discardEmpty': True, 'flags': 're.MULTI'}
         attrfn =  u"gap=True discardEmpty=True flags=re.MULTI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-              
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+                
     #################################################################################
 
 
@@ -588,12 +495,12 @@ class TestTokenizer(Tools):
         """
 
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=True, discard_empty=True, flags=re.DOTALL)
         tipo = tipo
         attributiTok = {'gap': True, 'discardEmpty': True, 'flags': 're.DOTALL'}
         attrfn = u"gap=True discardEmpty=True flags=re.DOTALL"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
           
     #################################################################################
 
@@ -610,13 +517,13 @@ class TestTokenizer(Tools):
         """
  
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=False, discard_empty=True, flags=re.UNICODE)
         tipo = tipo
         attributiTok = {'gap': False, 'discard_empty': True, 'flags': 're.UNI'}
         attrfn = u"gap=False discard_empty=True flags=re.UNI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################   
         
         
@@ -630,13 +537,13 @@ class TestTokenizer(Tools):
         """
  
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=False, discard_empty=True, flags=re.MULTILINE)
         tipo = tipo
         attributiTok = {'gap': False, 'discardEmpty': True, 'flags': 're.MULTI'}
         attrfn = u"gap=False discardEmpty=True flags=re.MULTI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################
 
 
@@ -650,13 +557,13 @@ class TestTokenizer(Tools):
         """
 
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=False, discard_empty=True, flags=re.DOTALL)
         tipo = tipo
         attributiTok = {'gap': False, 'discardEmpty': True, 'flags': 're.DOTALL'}
         attrfn =  u" gap=False discardEmpty=True flags=re.DOTALL"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     ##################################################################################
                 
 
@@ -670,13 +577,13 @@ class TestTokenizer(Tools):
         """
  
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer(pattern, gaps=True, discard_empty=False, flags=re.UNICODE)
         tipo = tipo
         attributiTok = {'gap': True, 'discardEmpty': False, 'flags': 're.UNI'}
         attrfn = u"gap=True discardEmpty=False flags=re.UNI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-    
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################   
         
         
@@ -690,13 +597,13 @@ class TestTokenizer(Tools):
         """
 
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=True, discard_empty=False, flags=re.MULTILINE)
         tipo = tipo
         attributiTok = {'gap': True, 'discardEmpty': False, 'flags': 're.MULTI'}
         attrfn = u"gap=True discardEmpty=False flags=re.MULTI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
         
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################
 
 
@@ -710,13 +617,13 @@ class TestTokenizer(Tools):
         """
  
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=True, discard_empty=False, flags=re.DOTALL)
         tipo = tipo
         attributiTok = {'gap': True, 'discardEmpty': False, 'flags': 're.DOTALL'}
         attrfn = u"gap=True discardEmpty=False flags=re.DOTALL"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-               
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################
 
 
@@ -730,13 +637,13 @@ class TestTokenizer(Tools):
         """
         
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=False, discard_empty=False, flags=re.UNICODE)
         tipo = tipo
         attributiTok = {'gap': False, 'discard_empty': False, 'flags': 're.UNI'}
         attrfn = u"gap=False discard_empty=False flags=re.UNI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################   
         
         
@@ -750,13 +657,13 @@ class TestTokenizer(Tools):
         """
         
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=False, discard_empty=False, flags=re.MULTILINE)
         tipo = tipo
         attributiTok =  {'gap': False, 'discardEmpty': False, 'flags': 're.MULTI'}
         attrfn = u"gap=False discardEmpty=False flags=re.MULTI"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     #################################################################################
 
 
@@ -770,13 +677,13 @@ class TestTokenizer(Tools):
         """
         
         testName = patternName
-        dimTests = self.dimTests
         tok = nltk.tokenize.RegexpTokenizer (pattern, gaps=False, discard_empty=False, flags=re.DOTALL)
         tipo = tipo
         attributiTok =  {'gap': False, 'discardEmpty': False, 'flags': 're.DOTALL'}
         attrfn = u"gap=False discardEmpty=False flags=re.DOTALL"
-        self.__TestTokenizer (testName, dimTests, tok, tipo, attributiTok, attrfn)
-
+        
+        self.__TestTokenizer2 (testName,  tok, tipo, attributiTok, attrfn)
+          
     ##################################################################################   
     
 ############### MY PUNKT TOKENIZERS   #######################################
@@ -826,22 +733,13 @@ class TestTokenizer(Tools):
                 :rtype: tuple
             """
             tupleScores = list ()
-            
-#old    
-#            #Oggetto per il corpus      
-#            corpusObj = Tools (dim) 
-#            corpusObj.CaricaCorpus ()
-##
+
             for paramS in self.TAGS.keys():
                 for paramW in self.TAGW:     
-#new 
-                    corpus = CorpusObj(dim, paramS, paramW)
-                    datiOut = tok.tokenize (corpus.Txt())
-                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = paramS)
-#old
-#                    datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))                      
-#                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
-
+                    attributi = None
+                    attrFilename = None
+                    score, test = self.__Test2 (testName, tok, dim, paramS, paramW, self.TIPO_PARAMS, tipo, attributi, attrFilename, registra = False)
+                            
                     tupleScores.append (tuple([paramTest, score]))
                     
             return tupleScores
@@ -868,18 +766,11 @@ class TestTokenizer(Tools):
             
             tupleScores = list ()
             
-            for dim in dims: 
-#new                 
-                
-                corpus = CorpusObj(dim, self.normalParamS, self.normalParamW)
-                datiOut = tok.tokenize (corpus.Txt())
-                r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = self.normalParamS)
-#old
-#                corpusObj = Tools (dim)
-#                corpusObj.CaricaCorpus ()        
-#                datiOut =  tok.tokenize (corpusObj.CreaPlainText (self.normalParamS, self.normalParamW)) 
-#                r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = self.normalParamS)
-####            
+            for dim in dims:
+                attributi = None
+                attrFilename = None
+                score, test = self.__Test2 (testName, tok, dim, self.normalParamS, self.normalParamW, self.TIPO_DIMENS, tipo, attributi, attrFilename, registra = False)
+
                 tupleScores.append (tuple([paramTest, score]))                        
                 
             return tupleScores
@@ -915,7 +806,7 @@ class TestTokenizer(Tools):
         precScore = 0
         attScore = self.sogliaMiglioramento
         dim = self.passoTraining
-        dimsent = abs(DimSamplesPunkt().NumSents (dim))
+        dimsent = self.NumSents (dim)
         nsentprec = 0 #questa var mi serve per controllare di non eccedere oltre le dimensioini del corpus di training
         
         print "inizio euristica miglioramento default punkt"
@@ -942,7 +833,7 @@ class TestTokenizer(Tools):
             nsentprec = dimsent         
             #precScore = attScore
             dim = dim + self.passoTraining
-            dimsent = abs(DimSamplesPunkt().NumSents (dim))
+            dimsent = self.NumSents (dim)
         print "fine stima dimensione di training"
         print "inizio test su default punkt tok"
         #Effettuo e registro il test con i parametri standard
@@ -1009,8 +900,9 @@ class TestTokenizer(Tools):
         precScore = 0
         attScore = self.sogliaMiglioramento
         dim = self.passoTraining
-        dimsent = abs(DimSamplesPunkt().NumSents (dim))
+        dimsent = self.NumSents (dim)
         nsentprec = 0 #questa var mi serve per controllare di non eccedere oltre le dimensioini del corpus di training
+        
         print "inizio stima dim training my punkt"
         while self.EuristicaMiglioramento (precScore, attScore):
             precScore = attScore
@@ -1032,7 +924,7 @@ class TestTokenizer(Tools):
             
             nsentprec = dimsent  
             dim = dim + self.passoTraining
-            dimsent = abs(DimSamplesPunkt().NumSents (dim))
+            dimsent = self.NumSents (dim)
 
         print "fine stima dimensione di training"
         print "inizio test my punkt"
@@ -1101,22 +993,14 @@ class TestTokenizer(Tools):
             """
            
             tupleScores = list ()
-#old
-#            #Oggetto per il corpus      
-#            corpusObj = Tools (dim) 
-#            corpusObj.CaricaCorpus ()
-#              
+
             for paramS in self.TAGS.keys():
                 for paramW in self.TAGW:  
                     try:
-#new 
-                        corpus = CorpusObj(dim, paramS, paramW)
-                        datiOut = tok.tokenize (corpus.Txt())
-                        r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = paramS)
-#old
-#                        datiOut =  tok.tokenize (corpusObj.CreaPlainText (paramS, paramW))             
-#                        r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = paramS)
-####àà                    
+                        attributi = None
+                        attrFilename = None
+                        score, test = self.__Test2 (testName, tok, dim, paramS, paramW, self.TIPO_PARAMS, tipo, attributi, attrFilename, registra = False)
+                                            
                         tupleScores.append (tuple([paramTest, score]))
                     except:
                         #se il tokenizzatore non è applicabile al testo
@@ -1145,20 +1029,12 @@ class TestTokenizer(Tools):
             #in questo caso per passare deve superare l'euristica delle prestazioni medie
             tupleScores = list ()
             
-            for dim in dims: 
-#old                
-#                corpusObj = Tools (dim)
-#                corpusObj.CaricaCorpus ()        
-#                try:
-#                    datiOut =  tok.tokenize (corpusObj.CreaPlainText (self.normalParamS, self.normalParamW)) 
-#                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpusObj.words, corpusObj.corpusLst, tag = self.normalParamS)
-#            
-#new 
-                corpus = CorpusObj(dim, self.normalParamS, self.normalParamW)
-                try:                
-                    datiOut = tok.tokenize (corpus.Txt())
-                    r, score = self.RisultatiTest(testName, datiOut, self.SENT, corpus.Words (), corpus.Lst (), tag = self.normalParamS)
-#########
+            for dim in dims:                 
+                try: 
+                    attributi = None
+                    attrFilename = None
+                    score, test = self.__Test2 (testName, tok, dim, self.normalParamS, self.normalParamW, self.TIPO_DIMENS, tipo, attributi, attrFilename, registra = False)
+                          
                     tupleScores.append (tuple([paramTest, score]))                        
                 except:
                     #se il tokenizzatore non è applicabile al testo
@@ -1199,7 +1075,7 @@ class TestTokenizer(Tools):
         attrfn = "_default_params"
         #inserita espressione di controllo - dato che questo tipo di tokenizzatore è applicabile solo
         # ad un campo ristretto di tipologie di testo        
-        if not self.__TestTokenizer (testName, self.dimTests, tok, tipo, attributiTok, attrfn):        
+        if not self.__TestTokenizer2 (testName, self.dimTests, tok, tipo, attributiTok, attrfn):        
             print "Fine funzione di test ", testName
             return
             
@@ -1287,174 +1163,7 @@ class TestTokenizer(Tools):
         return False
                                                       
     ########################################################################
-                                          
-#############################################################################
-##########  IL SEGUENTE BLOCCO DI INSTRUZIONI E' ############################
-##########  UTILIZZATO PER TESTARE I TEMPI TRA   ############################
-##########  IL METODO SEQUENZIALE E QUELLO  #################################
-##########  MULTI THREADS ###################################################
-#############################################################################
-                                           
-    def TestTimeThreadVsNormal (self):
-        r"""
-            Questo metodo testa e registra i tempi per eseguire
-            lo stesso compito in modalità normale sequenziale
-            oppure multithread
-        """
-        import time
-        import TestTextTiling_old
-        
-        
-        nSamples = [100, 150, 300, 500]
-        testNames = ['sequenziale', 'multithread']
-        print "Avvio Test"
-        for n in nSamples:
-            for test in testNames:
-                print "Test %s su %f campioni " % (test, n)
-                tstart = time.time ()
-                tools = Tools(n = n)
-                tools.CaricaCorpus ()
-                
-                for paramS in self.TAGS.keys():
-                    for paramW in self.TAGW:
-                        #creo il corpus da utilizzare per i tests
-                        corpus = tools.CreaPlainText (tagS = paramS, tagW = paramW) 
-                        
-                        filename = self.folderTestFiles + u" " + unicode(paramS) + u" "  + \
-                                                 unicode (paramW) + u" "    
-                        if test == 'sequenziale':
-                            TestTextTiling_old.TextTiling(corpus, tools = tools, folderTestFiles = filename,
-                                                   save = False)
-                        else:                     
-                             #MThreads
-                            TextTiling(corpus, tools = tools, folderTestFiles = filename,
-                                                   save = False)                           
-                tend = time.time ()
-                nSample = n
-                execTime = tend - tstart
-                filename = self.folderDati + "TestMultiTh.csv"
-                self.SaveTimeCsv (filename, test, nSample, execTime)
-                print "EXEC TIME %s: %f"%(test, execTime)
-                
-#############################################################################
-    def TestTimeThreads (self):
-        r"""
-            Questo metodo testa e registra i tempi per eseguire
-            lo stesso compito in modalità normale sequenziale
-            oppure multithread
-        """
-        import time 
-        
-        nSamples = [100, 150, 300, 500, 1000, 1500]
-        nThreads = [4, 8]
-        
-        print "Avvio Test"
-        for n in nSamples:
-            for nt in nThreads:
-                print "Test %d threads su %f campioni " % (nt, n)
-                tstart = time.time ()
-                tools = Tools(n = n)
-                tools.CaricaCorpus ()
-                
-                for paramS in self.TAGS.keys():
-                    for paramW in self.TAGW:
-                        #creo il corpus da utilizzare per i tests
-                        corpus = tools.CreaPlainText (tagS = paramS, tagW = paramW) 
-                        
-                        filename = self.folderTestFiles + u" " + unicode(paramS) + u" "  + \
-                                                 unicode (paramW) + u" "    
-
-                        self.AvviaTestTextTilingTokenizerMultiThreadsNThread(nt, tools,
-                                                corpus, paramS, paramW)
-                                                                
-                test = "nThread " + unicode (nt)            
-                tend = time.time ()
-                nSample = n
-                execTime = tend - tstart
-                filename = self.folderDati + "TestMultiThNTh.csv"
-                self.SaveTimeCsv (filename, test, nSample, execTime)
-                print "EXEC TIME %s: %f"%(test, execTime)
-
-############################################################################
-    #TEXTTILING TOKENIZER MULTI THREAD
-    def AvviaTestTextTilingTokenizerMultiThreadsNThread (self, nThread, tools, corpus, paramS, paramW):
-        r""" 
-            questo metodo effettua il test sul TextTiling Tokenizer
-            Questo metodo crea e avvia i test sul texttililng tokenize
-            
-            :param str corpus: il corpus su cui testare il tokenizzatore
-        """
-        filename = self.folderTestFiles + u" " + unicode(paramS) + u" "  + \
-                                                 unicode (paramW) + u" "        
-
-        #MThreads
-        TextTiling(corpus, tools = tools, folderTestFiles = filename,
-                                       save = False, nThread = nThread)                
-############################################################################                                       
-    #TEXTTILING TOKENIZER MULTI THREAD
-    def AvviaTestTextTilingTokenizerMultiThreads (self, corpus, paramS, paramW):
-        r""" 
-            questo metodo effettua il test sul TextTiling Tokenizer
-            Questo metodo crea e avvia i test sul texttililng tokenize
-            
-            :param str corpus: il corpus su cui testare il tokenizzatore
-        """
-        filename = self.folderTestFiles + u" " + unicode(paramS) + u" "  + \
-                                                 unicode (paramW) + u" "        
-
-        #MThreads
-        TextTiling(corpus, tools = self, folderTestFiles = filename,
-                                           save = self.save)
-############################################################################                                           
-    #TEXTTILING TOKENIZER
-    def AvviaTestTextTilingTokenizerNormal (self, corpus, paramS, paramW):
-        r""" 
-            questo metodo effettua il test sul TextTiling Tokenizer
-            Questo metodo crea e avvia i test sul texttililng tokenize
-            
-            :param str corpus: il corpus su cui testare il tokenizzatore
-        """
-        filename = self.folderTestFiles + u" " + unicode(paramS) + u" "  + \
-                                                 unicode (paramW) + u" "  
-        #old without threaads
-        import TestTextTiling_old
-        TestTextTiling_old.TextTiling(corpus, tools = self, folderTestFiles = filename,
-                                           save = self.save)
-                                           
-############################################################################
-    
-                                                   
-############################################################################                                                
-############################################################################ 
-                                           
-def Test ():
-    print """Test Mode\n si utilizza un campione di dimensione limitata\n 
-    usare la classe Test.py per lanciare il testing dei tokenizzatori
-    """
-    import time
-    
-    a=TestTokenizer(n = 150)
-    a = time.time()
-    a.AvviaTests ()       
-    b = time.time()
-    print a
-    print b
-    print b-a
-    
-    
-def TestThread ():
-    a = TestTokenizer ("MTHREAD", 1)    
-    a.TestTimeThreadVsNormal ()
-
-def TestThreadNTh ():
-    TestTokenizer ("MTHREAD", 1).TestTimeThreads ()
-    
-def Tests ():
-    nc = 20000
-    TestTokenizer (dimTests = [nc / 2, nc / 4, nc], save =True, aggiornaDatiTest=True)
-
-    
+              
 if __name__=="__main__":
-#    TestThreadNTh ()
-    Tests ()
+    print "No Test mode"
     

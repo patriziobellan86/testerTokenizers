@@ -11,6 +11,7 @@ Created on Tue Mar 08 15:57:18 2016
 """
 
 from __future__ import division
+from __future__ import unicode_literals
 
 import nltk
 from nltk.probability import FreqDist
@@ -44,77 +45,37 @@ class LogLikelihood (Tools):
 
         super (LogLikelihood, self).__init__ (n)
 
-        self.loglFilename = self.folderDati + "loglikelihood.pickle"
-        
         self.__col_logl = list ()
         self.queue = Queue.Queue ()
         
-        self.CaricaCorpus ()
-
-
-
+        
     def __FreqFromCorpus (self):
         r"""
             Questo metodo estrae le frequenze dal corpus
         """
+        print "Calcolo bigrams..."
         bi = FreqDist(bigrams(self.words))
+        print "Calcolo FreqDist..."
         wfr = FreqDist(self.words)
         
-        #popolo la coda        
+        print "Coda di elaborazione..."
+        print 
+              
+        tot = len(bi.keys())
+        i = 0
         for eles in bi.keys():
             a = wfr[eles[0]]
             b = wfr[eles[1]]
             ab = bi[eles]
             N = wfr.N()
+            try:
+                self.__col_logl.append (nltk.tokenize.punkt.PunktTrainer()._col_log_likelihood  (a, b, ab, N))
+                print "elemento %d / %d \t -> \tloglikelihood di %s %s \t\t ->  %f" % (i, tot,eles[0], eles[1], self.__col_logl[-1])
+            except UnicodeEncodeError:
+                #catturo eventuali errori di codifica
+                pass
+            i += 1
             
-            self.queue.put(tuple([a, b, ab, N]))
-        
-    
-    def __CalcolaLogL (self):
-        r"""
-            Questo metodo calcola il LogLikelihood
-        """
-        #bypass
-        while True:
-            a, b, ab, N = self.queue.get ()            
-            self.__col_logl.append (nltk.tokenize.punkt.PunktTrainer()._col_log_likelihood  (a, b, ab, N))
-            self.queue.task_done()
-        return 
-        #######################
-        
-        while True:
-            a, b, ab, N = self.queue.get ()
-            
-            self.__col_logl.append (nltk.tokenize.punkt.PunktTrainer()._col_log_likelihood  (a, b, ab, N))
-
-            self.queue.task_done()
-    
-    
-    #lancio tutti i threads
-    def __MThreard (self):
-        r"""
-            Questo metodo lancia in esecuzione i threads per il calcolo
-        """
-        #bypass
-        while not self.queue.empty ():
-            self.__CalcolaLogL                               
-        return
-        #############################
-        
-        
-        #numero di threads
-        nThread = multiprocessing.cpu_count()    #numero di thread pari al numero di processori logici
-        
-        nThread = 1 #limito il numero dei thread
-
-        while not self.queue.empty ():
-            #avvio tanti threads quanti sono il numero di processori logici
-            #disponibili
-            for  i in xrange (nThread):
-                t = threading.Thread(target = self.__CalcolaLogL)
-                t.daemon = True
-                t.start ()
-                       
                        
     def LogLikelihood (self):
         r"""
@@ -129,7 +90,7 @@ class LogLikelihood (Tools):
             :rtype: list
         """
         self.__FreqFromCorpus ()
-        self.__MThreard ()
+        #self.__MThreard ()
         
         
         mean = float( sum(self.__col_logl) / len(self.__col_logl))
@@ -163,8 +124,10 @@ class LogLikelihood (Tools):
         for i in range(1,4):
             #calcolo il logl
             dim = int (i / 3 * dimcorp )
+            print "Calcolo dimensione %d" % (dim)
             self.n = dim
             self.CaricaCorpus ()
+            print "Corpus dati caricato, inizio calcolo log..."
             ress.append (self.LogLikelihood ()[0])
         #registro i dati
         self.DelFile (self.loglFilename)
@@ -174,61 +137,5 @@ class LogLikelihood (Tools):
     
 ############################################################################
 
-class TestLogLikelihood (Tools):
-    r"""
-        Questa classe modella la batteria di test da effettuare
-    """
-    def __init__ (self, batterie = [-1], filename = "TestLogLikelihood_newTests.csv"):
-        r"""
-            :param list batterie: lista contenente le dimensioni dei test
-            :param str filename: il nome del file su cui salvare i test
-                
-            :return: i risultati dei test
-            :rtype: tuple
-        """
-     
-        #inizializzazione ereditarietà
-        super (TestLogLikelihood, self).__init__ (1)
-        #self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-       
-        #self.folderDati = self.folder + "dati" + os.path.sep
-        self.testFilename = self.folderDati + filename 
-         
-        self.AvviaTests (batterie)
-
-    
-    def AvviaTests (self, batterie):
-        r"""
-            Questo metodo avvia tutti i test
-            
-        """
-        for dim in batterie:
-            print "Avvio Test su %d campioni" % dim
-            #Effettuo il test
-            test = LogLikelihood (n = dim)
-            #registro i dati
-            filename = self.testFilename
-            result = test.LogLikelihood ()
-            
-            print "LogLikelihood pari a %f" % result
-            #salvo i log trovati    
-            self.SaveTestCsv (filename = filename,testName = "Loglikelihood",
-                                    nSamples = dim, result = result)
-            
-            self.SaveByte (result, self.loglFilename)                        
-        print "Tests Eseguiti correttamente"
-        
- 
-def TestClasseDiCalcolo ():
-    a = LogLikelihood (n = 1000)
-    print "la sogla logLikelihood sul campione è:", a.LogLikelihood ()
-
-
-def BatterieDiTest ():
-    batterieTests = [5000, 10000, 15000, 20000, 25000, 50000, 100000]
-    TestLogLikelihood (batterie = batterieTests)
-
 if __name__ == '__main__':
-#    BatterieDiTest ()
-#    TestClasseDiCalcolo ()
     LogLikelihood (-1).LogLikelihoods ()

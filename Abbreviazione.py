@@ -9,7 +9,6 @@ from Tools import Tools
 
 import re
 import glob
-import os
 
 
 class Abbreviazione (Tools):
@@ -18,18 +17,12 @@ class Abbreviazione (Tools):
         da utilizzare nella fase di addestramento del punkt tokenizer
     """
     def VERSION (self):
-        return u"vers.3.8.b"
+        return "1.0.a-Lite"
         
         
     def __init__ (self, dimSampPaisa = -1):
         #Tools.__init__ (self, -1)
         super (Abbreviazione, self).__init__ (-1)
-#        self.folder = os.path.sep + 'mnt' + os.path.sep + '8tera' + os.path.sep + 'shareclic' + os.path.sep + 'lucaNgrams' + os.path.sep + 'Patrizio' + os.path.sep + 'testerTokenizers' + os.path.sep
-#        self.fileExtAbbr = '.abl'
-#        self.folderDati = self.folder + 'dati' + os.path.sep
-#        self.folderCorpus = self.folder + 'corpus' + os.path.sep
-#
-#        self.morphItFileName = self.folderDati + u"morphit.utf8.txt"
 
         self.ABBR = u"SA"
         
