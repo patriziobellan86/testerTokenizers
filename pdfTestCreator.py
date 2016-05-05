@@ -17,19 +17,17 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, ParagraphAndImage, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
-
+from Tools import Tools
 import os
 
-class CreaPdf():
+class CreaPdf (Tools):
     def __init__ (self):
-        self.folderDati = "dati" + os.path.sep
-        self.folderGrafici = self.folderDati + "grafici" + os.path.sep
-        self.folderPdfs = self.folderDati + "pdfs" + os.path.sep
+        super (CreaPdf, self).__init__ ()
         
-        self.filenameLogoUni = self.folderDati + "res" + os.path.sep + u"unitn.jpg"        
-
-        self.filenameGraphDim =  u" DIMS.png"
-        self.filenameGraphParams = u" PARAMS.png"
+        self.filenameLogoUni = self.CaricaParametro(parametro = 'dati') + os.path.sep + "res" + os.path.sep + u"unitn.jpg"        
+        #self.folderGrself.CaricaParametro(parametro = 'dati') + os.path.sep + 'grafici' + os.path.abspath
+        self.filenameGraphDim =  u"_DIMS.png"
+        self.filenameGraphParams = u"_PARAMS.png"
         
         
     def CreaPdfTest (self, testName, ValorMedioPrestazioniParams, ValorMedioPrestazioniDims, 
@@ -141,7 +139,7 @@ class CreaPdf():
         imgLogoUni = Image(self.filenameLogoUni, 5*cm, 5*cm)
         
         #Inizo a creare il documento pdf
-        testPdfFilename = self.folderPdfs + u"Best results" + u".pdf"
+        testPdfFilename = self.folderPdfs + u"Best_results" + u".pdf"
         
         doc = SimpleDocTemplate(testPdfFilename, pagesize=A4,
                                 rightMargin=72,leftMargin=72,
