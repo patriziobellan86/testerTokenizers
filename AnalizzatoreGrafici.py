@@ -103,7 +103,7 @@ class AnalizzatoreGrafici (AnalizzatoreBase):
         else:
             #Numero di parole nel corpus di test   
            xLabel = ["words: " + str(self.NumWords(ele)) for ele in xLabel] 
-           yValue = [round(float(ele) * 100, 2) for ele[1] in res[tipo]]
+           yValue = [round(float(ele[1]) * 100, 2) for ele in res[tipo]]
 
         N = len (xLabel)
         ind = np.arange (N)  # coordinate x

@@ -24,7 +24,7 @@ class CreaPdf (Tools):
     def __init__ (self):
         super (CreaPdf, self).__init__ ()
         
-        self.filenameLogoUni = self.CaricaParametro(parametro = 'dati') + os.path.sep + "res" + os.path.sep + u"unitn.jpg"        
+        self.filenameLogoUni = os.path.normpath(self.CaricaParametro(parametro = 'dati') + os.path.sep + "res" + os.path.sep + u"unitn.jpg")
         #self.folderGrself.CaricaParametro(parametro = 'dati') + os.path.sep + 'grafici' + os.path.abspath
         self.filenameGraphDim =  u"_DIMS.png"
         self.filenameGraphParams = u"_PARAMS.png"
@@ -36,8 +36,8 @@ class CreaPdf (Tools):
         
         #per prima cosa carico i grafici ottenuti
 
-        graphParams = self.folderGrafici + testName + self.filenameGraphParams
-        graphDims = self.folderGrafici + testName + self.filenameGraphDim
+        graphParams = os.path.normpath(self.folderGrafici + testName + self.filenameGraphParams)
+        graphDims = os.path.normpath(self.folderGrafici + testName + self.filenameGraphDim)
         
         #creo l'oggetto immagine dei grafici
         graphParams = Image(graphParams, 20*cm, 15*cm)

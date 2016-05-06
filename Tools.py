@@ -302,9 +302,9 @@ class Parametri (GenericTools):
             accetta in ingresso il nome del parametro
             
         """
-        return self.parametri [parametro]
+        #return self.parametri [parametro]
 
-
+        return os.path.normpath(self.parametri [parametro])
 ##############################################################################
 ##############################################################################
 ##############################################################################
@@ -317,6 +317,9 @@ class Tools (Parametri):
   
     def __init__(self, n = -1, fileRisultati = "File Risultati"):
         super (Tools, self).__init__ ()
+                
+        self.TIPO_PARAMS = 'PARAMS'
+        self.TIPO_DIMENS = 'DIMS'
         
         #per word tok
         self.SPACE='SPACE'
@@ -345,12 +348,13 @@ class Tools (Parametri):
         self.stopwordsFilename = self.folderDati + u"ItalianStopwords.stopWords"
         self.morphItFileName = self.CaricaParametro(parametro = 'morphit')
         
-        self.fileRisultatiPickle = self.folderTestFiles + "results.pickle"
+        #self.fileRisultatiPickle = self.folderTestFiles + "results.pickle"
         self.fileNameRe = self.folderDati + u"RegularExpression.tag"
         self.loglFilename = self.folderDati + "loglikelihood.pickle"
         
         #file risultati testuale
-        self.fileRisultati = self.folderTestFiles + fileRisultati + u".txt"
+        self.fileRisultati = self.folderTestFiles + fileRisultati + u".risultati"
+        self.fileRisultatiTxt = self.folderTestFiles + fileRisultati + u".txt"
 
         #riepilogo variabili di classe
         #nSamples
@@ -372,7 +376,7 @@ class Tools (Parametri):
     def PrintOut(self, s):
         r""" questa funzione stampa a video e salva su file i dati s"""
         print s
-        self.SaveFile (s, self.fileRisultati)
+        self.SaveFile (s, self.fileRisultatiTxt)
                               
 ## da non usare in questa versione lite ma da riscrivere! 
 ##questo metodo nella strutturazione lite non deve essere presente perchè troppo lento!
@@ -681,6 +685,21 @@ class Tools (Parametri):
         print "fine files"
         return -nsent        
 
+
+    def NumWords (self, nSents):
+        r"""            
+            dato un numero di frasi richiesto, restituisce il numero di parole 
+           
+        """
+        nw = 0
+        try:        
+            files = glob.glob(self.folderCorpus+'*.*')[:nSents]
+        except:
+            return -1
+        for file in files:
+            nw = nw + len (self.LoadFile (file))
+        return nw
+            
 
 if __name__ == '__main__':
     a = Parametri () 
